@@ -1,0 +1,493 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ACLOCAL	build/Makefile	/^ACLOCAL = ${SHELL} \/home\/lixiao1\/wireway\/missing aclocal-1.14$/;"	m
+ACLOCAL_M4	build/Makefile	/^ACLOCAL_M4 = $(top_srcdir)\/aclocal.m4$/;"	m
+ALIGN_MASK	bitmap.c	200;"	d	file:
+AMTAR	build/Makefile	/^AMTAR = $${TAR-tar}$/;"	m
+AM_DEFAULT_VERBOSITY	build/Makefile	/^AM_DEFAULT_VERBOSITY = 1$/;"	m
+AM_RECURSIVE_TARGETS	build/Makefile	/^AM_RECURSIVE_TARGETS = cscope$/;"	m
+AM_V_CC	build/Makefile	/^AM_V_CC = $(am__v_CC_$(V))$/;"	m
+AM_V_CCLD	build/Makefile	/^AM_V_CCLD = $(am__v_CCLD_$(V))$/;"	m
+AM_V_GEN	build/Makefile	/^AM_V_GEN = $(am__v_GEN_$(V))$/;"	m
+AM_V_P	build/Makefile	/^AM_V_P = $(am__v_P_$(V))$/;"	m
+AM_V_at	build/Makefile	/^AM_V_at = $(am__v_at_$(V))$/;"	m
+AUTOCONF	build/Makefile	/^AUTOCONF = ${SHELL} \/home\/lixiao1\/wireway\/missing autoconf$/;"	m
+AUTOHEADER	build/Makefile	/^AUTOHEADER = ${SHELL} \/home\/lixiao1\/wireway\/missing autoheader$/;"	m
+AUTOMAKE	build/Makefile	/^AUTOMAKE = ${SHELL} \/home\/lixiao1\/wireway\/missing automake-1.14$/;"	m
+AWK	build/Makefile	/^AWK = mawk$/;"	m
+Alloc_fib	func.c	/^wireway_fib* Alloc_fib()$/;"	f
+BIT	bitops.h	26;"	d
+BITMAP_FIRST_WORD_MASK	bitmap.c	158;"	d	file:
+BITMAP_H	bitmap.h	13;"	d
+BITMAP_LAST_WORD_MASK	bitmap.h	57;"	d
+BITOPS_H	bitops.h	13;"	d
+BITOP_WORD	bitops.c	16;"	d	file:
+BITS_PER_BYTE	bitops.h	23;"	d
+BITS_PER_LONG	bitops.h	24;"	d
+BITS_TO_LONGS	bitops.h	29;"	d
+BIT_MASK	bitops.h	27;"	d
+BIT_WORD	bitops.h	28;"	d
+CC	build/Makefile	/^CC = gcc -std=gnu99$/;"	m
+CCDEPMODE	build/Makefile	/^CCDEPMODE = depmode=gcc3$/;"	m
+CCLD	build/Makefile	/^CCLD = $(CC)$/;"	m
+CFLAGS	build/Makefile	/^CFLAGS = -g -O2$/;"	m
+CHAR_BIT	bitops.h	22;"	d
+COMPILE	build/Makefile	/^COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \\$/;"	m
+CONFIG_CLEAN_FILES	build/Makefile	/^CONFIG_CLEAN_FILES =$/;"	m
+CONFIG_CLEAN_VPATH_FILES	build/Makefile	/^CONFIG_CLEAN_VPATH_FILES =$/;"	m
+CONFIG_HEADER	build/Makefile	/^CONFIG_HEADER = config.h$/;"	m
+CPP	build/Makefile	/^CPP = gcc -std=gnu99 -E$/;"	m
+CPPFLAGS	build/Makefile	/^CPPFLAGS = $/;"	m
+CSCOPE	build/Makefile	/^CSCOPE = cscope$/;"	m
+CTAGS	build/Makefile	/^CTAGS = ctags$/;"	m
+CYGPATH_W	build/Makefile	/^CYGPATH_W = echo$/;"	m
+DECLARE_BITMAP	bitmap.h	63;"	d
+DEFAULT_INCLUDES	build/Makefile	/^DEFAULT_INCLUDES = -I. -I$(srcdir)$/;"	m
+DEFS	build/Makefile	/^DEFS = -DHAVE_CONFIG_H$/;"	m
+DEPDIR	build/Makefile	/^DEPDIR = .deps$/;"	m
+DISTFILES	build/Makefile	/^DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)$/;"	m
+DIST_ARCHIVES	build/Makefile	/^DIST_ARCHIVES = $(distdir).tar.gz$/;"	m
+DIST_COMMON	build/Makefile	/^DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \\$/;"	m
+DIST_SOURCES	build/Makefile	/^DIST_SOURCES = $(wireway_SOURCES)$/;"	m
+DIST_TARGETS	build/Makefile	/^DIST_TARGETS = dist-gzip$/;"	m
+DIV_ROUND_UP	bitops.h	20;"	d
+ECHO_C	build/Makefile	/^ECHO_C = $/;"	m
+ECHO_N	build/Makefile	/^ECHO_N = -n$/;"	m
+ECHO_T	build/Makefile	/^ECHO_T = $/;"	m
+EGREP	build/Makefile	/^EGREP = \/bin\/grep -E$/;"	m
+ETAGS	build/Makefile	/^ETAGS = etags$/;"	m
+EXEEXT	build/Makefile	/^EXEEXT = $/;"	m
+GREP	build/Makefile	/^GREP = \/bin\/grep$/;"	m
+GZIP_ENV	build/Makefile	/^GZIP_ENV = --best$/;"	m
+GetStringHash	func.c	/^int GetStringHash(char *name)$/;"	f
+HAVE_INTTYPES_H	build/config.h	5;"	d
+HAVE_MALLOC	build/config.h	9;"	d
+HAVE_MEMORY_H	build/config.h	12;"	d
+HAVE_STDINT_H	build/config.h	15;"	d
+HAVE_STDLIB_H	build/config.h	18;"	d
+HAVE_STRINGS_H	build/config.h	21;"	d
+HAVE_STRING_H	build/config.h	24;"	d
+HAVE_SYS_STAT_H	build/config.h	27;"	d
+HAVE_SYS_TYPES_H	build/config.h	30;"	d
+HAVE_UNISTD_H	build/config.h	33;"	d
+INIT_LIST_HEAD	list.h	/^static inline void INIT_LIST_HEAD(struct list_head *list)$/;"	f
+INSTALL	build/Makefile	/^INSTALL = \/usr\/bin\/install -c$/;"	m
+INSTALL_DATA	build/Makefile	/^INSTALL_DATA = ${INSTALL} -m 644$/;"	m
+INSTALL_HEADER	build/Makefile	/^INSTALL_HEADER = $(INSTALL_DATA)$/;"	m
+INSTALL_PROGRAM	build/Makefile	/^INSTALL_PROGRAM = ${INSTALL}$/;"	m
+INSTALL_SCRIPT	build/Makefile	/^INSTALL_SCRIPT = ${INSTALL}$/;"	m
+INSTALL_STRIP_PROGRAM	build/Makefile	/^INSTALL_STRIP_PROGRAM = $(install_sh) -c -s$/;"	m
+LDFLAGS	build/Makefile	/^LDFLAGS = $/;"	m
+LIBOBJS	build/Makefile	/^LIBOBJS = $/;"	m
+LIBS	build/Makefile	/^LIBS = $/;"	m
+LINK	build/Makefile	/^LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@$/;"	m
+LIST_HEAD_INIT	list.h	6;"	d
+LTLIBOBJS	build/Makefile	/^LTLIBOBJS = $/;"	m
+MAKEINFO	build/Makefile	/^MAKEINFO = ${SHELL} \/home\/lixiao1\/wireway\/missing makeinfo$/;"	m
+MAX_KEY_LEN	bptree.c	3;"	d	file:
+MAX_LEN	wireway.h	5;"	d
+MAX_NUM_VALUE	bptree.c	4;"	d	file:
+MKDIR_P	build/Makefile	/^MKDIR_P = \/bin\/mkdir -p$/;"	m
+NORMAL_INSTALL	build/Makefile	/^NORMAL_INSTALL = :$/;"	m
+NORMAL_UNINSTALL	build/Makefile	/^NORMAL_UNINSTALL = :$/;"	m
+OBJEXT	build/Makefile	/^OBJEXT = o$/;"	m
+PACKAGE	build/Makefile	/^PACKAGE = wireway$/;"	m
+PACKAGE	build/config.h	36;"	d
+PACKAGE_BUGREPORT	build/Makefile	/^PACKAGE_BUGREPORT = lijiyong0303@163.com$/;"	m
+PACKAGE_BUGREPORT	build/config.h	39;"	d
+PACKAGE_NAME	build/Makefile	/^PACKAGE_NAME = wireway$/;"	m
+PACKAGE_NAME	build/config.h	42;"	d
+PACKAGE_STRING	build/Makefile	/^PACKAGE_STRING = wireway 0.0.1$/;"	m
+PACKAGE_STRING	build/config.h	45;"	d
+PACKAGE_TARNAME	build/Makefile	/^PACKAGE_TARNAME = wireway$/;"	m
+PACKAGE_TARNAME	build/config.h	48;"	d
+PACKAGE_URL	build/Makefile	/^PACKAGE_URL = $/;"	m
+PACKAGE_URL	build/config.h	51;"	d
+PACKAGE_VERSION	build/Makefile	/^PACKAGE_VERSION = 0.0.1$/;"	m
+PACKAGE_VERSION	build/config.h	54;"	d
+PATH_SEPARATOR	build/Makefile	/^PATH_SEPARATOR = :$/;"	m
+POST_INSTALL	build/Makefile	/^POST_INSTALL = :$/;"	m
+POST_UNINSTALL	build/Makefile	/^POST_UNINSTALL = :$/;"	m
+PRE_INSTALL	build/Makefile	/^PRE_INSTALL = :$/;"	m
+PRE_UNINSTALL	build/Makefile	/^PRE_UNINSTALL = :$/;"	m
+PROGRAMS	build/Makefile	/^PROGRAMS = $(bin_PROGRAMS)$/;"	m
+SET_MAKE	build/Makefile	/^SET_MAKE = $/;"	m
+SHELL	build/Makefile	/^SHELL = \/bin\/bash$/;"	m
+SOURCES	build/Makefile	/^SOURCES = $(wireway_SOURCES)$/;"	m
+STDC_HEADERS	build/config.h	57;"	d
+STRIP	build/Makefile	/^STRIP = $/;"	m
+VERSION	build/Makefile	/^VERSION = 0.0.1$/;"	m
+VERSION	build/config.h	60;"	d
+VPATH	build/Makefile	/^VPATH = ..$/;"	m
+__LIST__	list.h	2;"	d
+__list_add	list.h	/^static inline void __list_add( struct list_head *new, struct list_head *prev, struct list_head *next)$/;"	f
+__list_del	list.h	/^static inline void __list_del(struct list_head * prev, struct list_head * next)$/;"	f
+__wireway__	wireway.h	2;"	d
+abs_builddir	build/Makefile	/^abs_builddir = \/home\/lixiao1\/wireway\/build$/;"	m
+abs_srcdir	build/Makefile	/^abs_srcdir = \/home\/lixiao1\/wireway\/build\/..$/;"	m
+abs_top_builddir	build/Makefile	/^abs_top_builddir = \/home\/lixiao1\/wireway\/build$/;"	m
+abs_top_srcdir	build/Makefile	/^abs_top_srcdir = \/home\/lixiao1\/wireway\/build\/..$/;"	m
+ac_ct_CC	build/Makefile	/^ac_ct_CC = gcc$/;"	m
+ac_fn_c_check_header_compile	configure	/^ac_fn_c_check_header_compile ()$/;"	f
+ac_fn_c_check_header_mongrel	configure	/^ac_fn_c_check_header_mongrel ()$/;"	f
+ac_fn_c_try_compile	configure	/^ac_fn_c_try_compile ()$/;"	f
+ac_fn_c_try_cpp	configure	/^ac_fn_c_try_cpp ()$/;"	f
+ac_fn_c_try_run	configure	/^ac_fn_c_try_run ()$/;"	f
+addr	wireway.h	/^    int  addr;$/;"	m	struct:point_tag
+addr	wireway.h	/^    int addr;$/;"	m	struct:location_tag
+adjust_root	bptree.c	/^node *adjust_root(node *root)$/;"	f
+aix_post_process_depfile	depcomp	/^aix_post_process_depfile ()$/;"	f
+alloc_bptree_block	save.c	/^unsigned long  alloc_bptree_block()$/;"	f
+alloc_index_block	save.c	/^unsigned long alloc_index_block()$/;"	f
+alloc_key_disk	save.c	/^int alloc_key_disk(int len)$/;"	f
+am__CONFIG_DISTCLEAN_FILES	build/Makefile	/^am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \\$/;"	m
+am__aclocal_m4_deps	build/Makefile	/^am__aclocal_m4_deps = $(top_srcdir)\/configure.ac$/;"	m
+am__can_run_installinfo	build/Makefile	/^am__can_run_installinfo = \\$/;"	m
+am__cd	build/Makefile	/^am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd$/;"	m
+am__configure_deps	build/Makefile	/^am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \\$/;"	m
+am__define_uniq_tagged_files	build/Makefile	/^am__define_uniq_tagged_files = \\$/;"	m
+am__depfiles_maybe	build/Makefile	/^am__depfiles_maybe = depfiles$/;"	m
+am__distuninstallcheck_listfiles	build/Makefile	/^am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \\$/;"	m
+am__include	build/Makefile	/^am__include = include$/;"	m
+am__installdirs	build/Makefile	/^am__installdirs = "$(DESTDIR)$(bindir)"$/;"	m
+am__is_gnu_make	build/Makefile	/^am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'$/;"	m
+am__leading_dot	build/Makefile	/^am__leading_dot = .$/;"	m
+am__make_dryrun	build/Makefile	/^am__make_dryrun = (target_option=n; $(am__make_running_with_option))$/;"	m
+am__make_keepgoing	build/Makefile	/^am__make_keepgoing = (target_option=k; $(am__make_running_with_option))$/;"	m
+am__make_running_with_option	build/Makefile	/^am__make_running_with_option = \\$/;"	m
+am__mv	build/Makefile	/^am__mv = mv -f$/;"	m
+am__post_remove_distdir	build/Makefile	/^am__post_remove_distdir = $(am__remove_distdir)$/;"	m
+am__quote	build/Makefile	/^am__quote = $/;"	m
+am__remove_distdir	build/Makefile	/^am__remove_distdir = \\$/;"	m
+am__tagged_files	build/Makefile	/^am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \\$/;"	m
+am__tar	build/Makefile	/^am__tar = $${TAR-tar} chof - "$$tardir"$/;"	m
+am__uniquify_input	build/Makefile	/^am__uniquify_input = $(AWK) '\\$/;"	m
+am__untar	build/Makefile	/^am__untar = $${TAR-tar} xf -$/;"	m
+am__v_CCLD_	build/Makefile	/^am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_CCLD_0	build/Makefile	/^am__v_CCLD_0 = @echo "  CCLD    " $@;$/;"	m
+am__v_CCLD_1	build/Makefile	/^am__v_CCLD_1 = $/;"	m
+am__v_CC_	build/Makefile	/^am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_CC_0	build/Makefile	/^am__v_CC_0 = @echo "  CC      " $@;$/;"	m
+am__v_CC_1	build/Makefile	/^am__v_CC_1 = $/;"	m
+am__v_GEN_	build/Makefile	/^am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_GEN_0	build/Makefile	/^am__v_GEN_0 = @echo "  GEN     " $@;$/;"	m
+am__v_GEN_1	build/Makefile	/^am__v_GEN_1 = $/;"	m
+am__v_P_	build/Makefile	/^am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_P_0	build/Makefile	/^am__v_P_0 = false$/;"	m
+am__v_P_1	build/Makefile	/^am__v_P_1 = :$/;"	m
+am__v_at_	build/Makefile	/^am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_at_0	build/Makefile	/^am__v_at_0 = @$/;"	m
+am__v_at_1	build/Makefile	/^am__v_at_1 = $/;"	m
+am_wireway_OBJECTS	build/Makefile	/^am_wireway_OBJECTS = test_wireway.$(OBJEXT) func.$(OBJEXT) \\$/;"	m
+as_fn_append	build/config.status	/^  as_fn_append ()$/;"	f
+as_fn_append	configure	/^  as_fn_append ()$/;"	f
+as_fn_arith	build/config.status	/^  as_fn_arith ()$/;"	f
+as_fn_arith	configure	/^  as_fn_arith ()$/;"	f
+as_fn_error	build/config.status	/^as_fn_error ()$/;"	f
+as_fn_error	configure	/^as_fn_error ()$/;"	f
+as_fn_executable_p	build/config.status	/^as_fn_executable_p ()$/;"	f
+as_fn_executable_p	configure	/^as_fn_executable_p ()$/;"	f
+as_fn_exit	build/config.status	/^as_fn_exit ()$/;"	f
+as_fn_exit	configure	/^as_fn_exit ()$/;"	f
+as_fn_failure	configure	/^as_fn_failure () { as_fn_return 1; }$/;"	f
+as_fn_mkdir_p	build/config.status	/^as_fn_mkdir_p ()$/;"	f
+as_fn_mkdir_p	configure	/^as_fn_mkdir_p ()$/;"	f
+as_fn_ret_failure	configure	/^as_fn_ret_failure () { return 1; }$/;"	f
+as_fn_ret_success	configure	/^as_fn_ret_success () { return 0; }$/;"	f
+as_fn_set_status	build/config.status	/^as_fn_set_status ()$/;"	f
+as_fn_set_status	configure	/^as_fn_set_status ()$/;"	f
+as_fn_success	configure	/^as_fn_success () { as_fn_return 0; }$/;"	f
+as_fn_unset	build/config.status	/^as_fn_unset ()$/;"	f
+as_fn_unset	configure	/^as_fn_unset ()$/;"	f
+assgin_bridge_location	func.c	/^void assgin_bridge_location(bridge_point *b)$/;"	f
+assgin_point_location	func.c	/^void assgin_point_location(bridge_point  *b)$/;"	f
+attach_wireway	test_wireway.c	/^int attach_wireway(char *name,int addr)$/;"	f
+bin_PROGRAMS	build/Makefile	/^bin_PROGRAMS = wireway$(EXEEXT)$/;"	m
+bindir	build/Makefile	/^bindir = ${exec_prefix}\/bin$/;"	m
+bitmap	save.c	/^    long bitmap[(node_num\/sizeof(long))+1];       $/;"	m	struct:file_header_tag	file:
+bitmap_and	bitmap.h	/^static inline int bitmap_and(unsigned long *dst, const unsigned long *src1,$/;"	f
+bitmap_andnot	bitmap.h	/^static inline int bitmap_andnot(unsigned long *dst, const unsigned long *src1,$/;"	f
+bitmap_clear	bitmap.c	/^void bitmap_clear(unsigned long *map, int start, int nr)$/;"	f
+bitmap_complement	bitmap.h	/^static inline void bitmap_complement(unsigned long *dst, const unsigned long *src,$/;"	f
+bitmap_copy	bitmap.h	/^static inline void bitmap_copy(unsigned long *dst, const unsigned long *src,$/;"	f
+bitmap_empty	bitmap.h	/^static inline int bitmap_empty(const unsigned long *src, int nbits)$/;"	f
+bitmap_equal	bitmap.h	/^static inline int bitmap_equal(const unsigned long *src1,$/;"	f
+bitmap_fill	bitmap.h	/^static inline void bitmap_fill(unsigned long *dst, int nbits)$/;"	f
+bitmap_find_next_zero_area	bitmap.c	/^unsigned long bitmap_find_next_zero_area(unsigned long *map,$/;"	f
+bitmap_full	bitmap.h	/^static inline int bitmap_full(const unsigned long *src, int nbits)$/;"	f
+bitmap_intersects	bitmap.h	/^static inline int bitmap_intersects(const unsigned long *src1,$/;"	f
+bitmap_new	bitmap.h	/^static inline unsigned long *bitmap_new(int nbits)$/;"	f
+bitmap_or	bitmap.h	/^static inline void bitmap_or(unsigned long *dst, const unsigned long *src1,$/;"	f
+bitmap_set	bitmap.c	/^void bitmap_set(unsigned long *map, int start, int nr)$/;"	f
+bitmap_xor	bitmap.h	/^static inline void bitmap_xor(unsigned long *dst, const unsigned long *src1,$/;"	f
+bitmap_zero	bitmap.h	/^static inline void bitmap_zero(unsigned long *dst, int nbits)$/;"	f
+block_size	save.c	9;"	d	file:
+bptree_type	save.c	/^    bptree_type,$/;"	e	enum:zone_type	file:
+bridge	wireway.h	/^    struct list_head bridge;$/;"	m	struct:bridge_point_tag	typeref:struct:bridge_point_tag::list_head
+bridge_point	wireway.h	/^}bridge_point;$/;"	t	typeref:struct:bridge_point_tag
+bridge_point_tag	wireway.h	/^typedef struct bridge_point_tag$/;"	s
+bridge_wireway	test_wireway.c	/^int bridge_wireway(char *srcname,point *p)$/;"	f
+build_alias	build/Makefile	/^build_alias = $/;"	m
+builddir	build/Makefile	/^builddir = .$/;"	m
+bulk_load	bptree.c	/^node *bulk_load(char **keys, int *values, int n)$/;"	f
+capacity	bptree.h	/^    int capacity;$/;"	m	struct:queue
+change_bit	bitops.h	/^static inline void change_bit(int nr, unsigned long *addr)$/;"	f
+clear_bit	bitops.h	/^static inline void clear_bit(int nr, unsigned long *addr)$/;"	f
+clz32	bitops.h	/^static inline int clz32(uint32_t val)$/;"	f
+clz64	bitops.h	/^static inline int clz64(uint64_t val)$/;"	f
+clzl	bitops.h	123;"	d
+cmp	bptree.c	/^int cmp(const void *p, const void *q)$/;"	f
+coalesce_nodes	bptree.c	/^node *coalesce_nodes(node *root, node *nd, node *neighbor, int nd_index)$/;"	f
+container_of	list.h	12;"	d
+create_wireway	test_wireway.c	/^wireway* create_wireway(char *name)$/;"	f
+ctz32	bitops.h	/^static inline int ctz32(uint32_t val)$/;"	f
+ctz64	bitops.h	/^static inline int ctz64(uint64_t val)$/;"	f
+ctzl	bitops.h	124;"	d
+datadir	build/Makefile	/^datadir = ${datarootdir}$/;"	m
+datarootdir	build/Makefile	/^datarootdir = ${prefix}\/share$/;"	m
+delete	bptree.c	/^node *delete(node *root, char *key)$/;"	f
+delete_entry	bptree.c	/^node *delete_entry(node *root, node *nd, int index)$/;"	f
+depcomp	build/Makefile	/^depcomp = $(SHELL) $(top_srcdir)\/depcomp$/;"	m
+deposit32	bitops.h	/^static inline uint32_t deposit32(uint32_t value, int start, int length,$/;"	f
+deposit64	bitops.h	/^static inline uint64_t deposit64(uint64_t value, int start, int length,$/;"	f
+dequeue	bptree.c	/^node *dequeue(queue *q)$/;"	f
+dest	wireway.h	/^    char dest;$/;"	m	struct:bridge_point_tag
+dest	wireway.h	/^    char dest;$/;"	m	struct:point_tag
+destroy_node	bptree.c	/^void destroy_node(node *nd)$/;"	f
+destroy_tree	bptree.c	/^void destroy_tree(node *root)$/;"	f
+destroy_wireway	func.c	/^void destroy_wireway(wireway *w)$/;"	f
+disk_storage_exit	save.c	/^void disk_storage_exit()$/;"	f
+disk_storage_init	save.c	/^int disk_storage_init()$/;"	f
+distcleancheck_listfiles	build/Makefile	/^distcleancheck_listfiles = find . -type f -print$/;"	m
+distdir	build/Makefile	/^distdir = $(PACKAGE)-$(VERSION)$/;"	m
+distribute_nodes	bptree.c	/^void distribute_nodes(node *nd, node *neighbor, int nd_index)$/;"	f
+distuninstallcheck_listfiles	build/Makefile	/^distuninstallcheck_listfiles = find . -type f -print$/;"	m
+docdir	build/Makefile	/^docdir = ${datarootdir}\/doc\/${PACKAGE_TARNAME}$/;"	m
+dst	wireway.h	/^    int dst;$/;"	m	struct:wireway_fib_tag
+dvidir	build/Makefile	/^dvidir = ${docdir}$/;"	m
+enqueue	bptree.c	/^void enqueue(queue *q, node *nd)$/;"	f
+exec_prefix	build/Makefile	/^exec_prefix = ${prefix}$/;"	m
+extract32	bitops.h	/^static inline uint32_t extract32(uint32_t value, int start, int length)$/;"	f
+extract64	bitops.h	/^static inline uint64_t extract64(uint64_t value, int start, int length)$/;"	f
+fib	wireway.h	/^    struct list_head fib;$/;"	m	struct:point_tag	typeref:struct:point_tag::list_head
+file	save.c	/^    FILE *file;$/;"	m	struct:storage_zone_tag	file:
+file_head	save.c	/^}file_head;$/;"	t	typeref:struct:file_header_tag	file:
+file_header_tag	save.c	/^typedef struct file_header_tag$/;"	s	file:
+find	bptree.c	/^void *find(node *root, char *key)$/;"	f
+find_first_bit	bitops.h	/^static inline unsigned long find_first_bit(const unsigned long *addr,$/;"	f
+find_first_zero_bit	bitops.h	/^static inline unsigned long find_first_zero_bit(const unsigned long *addr,$/;"	f
+find_last_bit	bitops.c	/^unsigned long find_last_bit(const unsigned long *addr, unsigned long size)$/;"	f
+find_leaf	bptree.c	/^node *find_leaf(node *root, char *key)$/;"	f
+find_next_bit	bitops.c	/^unsigned long find_next_bit(const unsigned long *addr, unsigned long size,$/;"	f
+find_next_zero_bit	bitops.c	/^unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size,$/;"	f
+front	bptree.h	/^    int front;$/;"	m	struct:queue
+func_cl_dashL	compile	/^func_cl_dashL ()$/;"	f
+func_cl_dashl	compile	/^func_cl_dashl ()$/;"	f
+func_cl_wrapper	compile	/^func_cl_wrapper ()$/;"	f
+func_file_conv	compile	/^func_file_conv ()$/;"	f
+get_level	bptree.c	/^int get_level(node *root, node *nd)$/;"	f
+get_next_node	list.h	/^static inline struct list_head* get_next_node(struct list_head *entry,int type)$/;"	f
+get_node_index	bptree.c	/^int get_node_index(node *nd)$/;"	f
+get_node_load	func.c	/^int get_node_load(point *p)$/;"	f
+get_pre_node	list.h	/^static inline struct list_head* get_pre_node(struct list_head *entry,int type)$/;"	f
+get_relate_bridge	func.c	/^bridge_point *get_relate_bridge(point *p)$/;"	f
+get_unused_peer	func.c	/^point* get_unused_peer(wireway *w)$/;"	f
+give_advice	missing	/^give_advice ()$/;"	f
+head	save.c	/^    file_head *head;$/;"	m	struct:storage_zone_tag	file:
+host_alias	build/Makefile	/^host_alias = $/;"	m
+htmldir	build/Makefile	/^htmldir = ${docdir}$/;"	m
+hweight_long	bitops.h	/^static inline unsigned long hweight_long(unsigned long w)$/;"	f
+includedir	build/Makefile	/^includedir = ${prefix}\/include$/;"	m
+index_file_size	save.c	11;"	d	file:
+infodir	build/Makefile	/^infodir = ${datarootdir}\/info$/;"	m
+init_queue	bptree.c	/^queue *init_queue(int capacity)$/;"	f
+init_wireway	func.c	/^int init_wireway(wireway *w,char *name)$/;"	f
+insert	bptree.c	/^node *insert(node *root, char *key, void *data)$/;"	f
+insert_bridge_point	func.c	/^void insert_bridge_point(bridge_point *b,wireway *src)$/;"	f
+insert_into_leaf	bptree.c	/^void insert_into_leaf(node *leaf, int index, char *key, void *data)$/;"	f
+insert_into_leaf_after_splitting	bptree.c	/^node *insert_into_leaf_after_splitting(node *root, node *leaf, int index, char *key, void *data)$/;"	f
+insert_into_node	bptree.c	/^void insert_into_node(node *nd, node *right, int index, char *key)$/;"	f
+insert_into_node_after_splitting	bptree.c	/^node *insert_into_node_after_splitting(node *root, node *nd, node *right, int index, char *key)$/;"	f
+insert_into_parent	bptree.c	/^node *insert_into_parent(node *root, node *left, node *right, char *key)$/;"	f
+insert_wireway_tree	func.c	/^void insert_wireway_tree(wireway *w)$/;"	f
+install_sh	build/Makefile	/^install_sh = ${SHELL} \/home\/lixiao1\/wireway\/install-sh$/;"	m
+install_sh_DATA	build/Makefile	/^install_sh_DATA = $(install_sh) -c -m 644$/;"	m
+install_sh_PROGRAM	build/Makefile	/^install_sh_PROGRAM = $(install_sh) -c$/;"	m
+install_sh_SCRIPT	build/Makefile	/^install_sh_SCRIPT = $(install_sh) -c$/;"	m
+is_leaf	bptree.h	/^    bool is_leaf;$/;"	m	struct:node
+items	bptree.h	/^    node **items;$/;"	m	struct:queue
+joint_point	wireway.h	/^}joint_point;$/;"	t	typeref:struct:joint_point_tag
+joint_point_tag	wireway.h	/^typedef struct joint_point_tag$/;"	s
+key_type	save.c	/^    key_type, $/;"	e	enum:zone_type	file:
+keys	bptree.h	/^    char *keys[5-1];$/;"	m	struct:node
+libdir	build/Makefile	/^libdir = ${exec_prefix}\/lib$/;"	m
+libexecdir	build/Makefile	/^libexecdir = ${exec_prefix}\/libexec$/;"	m
+list	wireway.h	/^    struct list_head list;$/;"	m	struct:bridge_point_tag	typeref:struct:bridge_point_tag::list_head
+list	wireway.h	/^    struct list_head list;$/;"	m	struct:joint_point_tag	typeref:struct:joint_point_tag::list_head
+list	wireway.h	/^    struct list_head list;$/;"	m	struct:point_tag	typeref:struct:point_tag::list_head
+list	wireway.h	/^    struct list_head list;$/;"	m	struct:wireway_fib_tag	typeref:struct:wireway_fib_tag::list_head
+list_add	list.h	/^static inline void list_add(struct list_head *new, struct list_head *head)$/;"	f
+list_del	list.h	/^static inline void list_del(struct list_head *entry)$/;"	f
+list_empty	list.h	/^static inline int list_empty(const struct list_head *head)$/;"	f
+list_entry	list.h	7;"	d
+list_for_each	list.h	16;"	d
+list_for_each_safe	list.h	20;"	d
+list_head	list.h	/^struct list_head$/;"	s
+list_wireway_tree	func.c	/^void list_wireway_tree(node *nd)$/;"	f
+localedir	build/Makefile	/^localedir = ${datarootdir}\/locale$/;"	m
+localstatedir	build/Makefile	/^localstatedir = ${prefix}\/var$/;"	m
+location	wireway.h	/^    struct location_tag *location;$/;"	m	struct:point_tag	typeref:struct:point_tag::location_tag
+location	wireway.h	/^}location;$/;"	t	typeref:struct:location_tag
+location_peer	wireway.h	/^    struct point_tag *location_peer;$/;"	m	struct:bridge_point_tag	typeref:struct:bridge_point_tag::point_tag
+location_tag	wireway.h	/^typedef struct location_tag$/;"	s
+lookup_wireway	func.c	/^wireway* lookup_wireway(char *name)$/;"	f
+main	test_wireway.c	/^int main(void)$/;"	f
+make_dummy_depfile	depcomp	/^make_dummy_depfile ()$/;"	f
+make_insert_value	func.c	/^int make_insert_value(struct list_head *list,wireway *w)$/;"	f
+make_new_leaf	bptree.c	/^node *make_new_leaf()$/;"	f
+make_new_node	bptree.c	/^node *make_new_node()$/;"	f
+make_new_root	bptree.c	/^node *make_new_root(node *left, node *right, char *key)$/;"	f
+make_new_tree	bptree.c	/^node *make_new_tree(char *key, void *data)$/;"	f
+make_wireway_peer	test_wireway.c	/^int make_wireway_peer(char *srcname,char *dstname)$/;"	f
+mandir	build/Makefile	/^mandir = ${datarootdir}\/man$/;"	m
+mkdir_p	build/Makefile	/^mkdir_p = $(MKDIR_P)$/;"	m
+mkinstalldirs	build/Makefile	/^mkinstalldirs = $(install_sh) -d$/;"	m
+name	wireway.h	/^    char name[MAX_LEN];$/;"	m	struct:wireway_tag
+next	list.h	/^    struct list_head *next,*prev;$/;"	m	struct:list_head	typeref:struct:list_head::list_head
+next	save.c	/^    struct storage_zone_tag *next;$/;"	m	struct:storage_zone_tag	typeref:struct:storage_zone_tag::storage_zone_tag	file:
+next	wireway.h	/^    struct wireway_tag *next;$/;"	m	struct:wireway_tag	typeref:struct:wireway_tag::wireway_tag
+node	bptree.h	/^typedef struct node {$/;"	s
+node	bptree.h	/^} node;$/;"	t	typeref:struct:node
+node_count	save.c	/^    int node_count;$/;"	m	struct:file_header_tag	file:
+node_id	bptree.h	/^    int node_id;$/;"	m	struct:node
+node_num	save.c	10;"	d	file:
+node_type	list.h	/^    char node_type;$/;"	m	struct:list_head
+num_keys	bptree.h	/^    int num_keys;$/;"	m	struct:node
+offsetof	list.h	10;"	d
+oldincludedir	build/Makefile	/^oldincludedir = \/usr\/include$/;"	m
+parent	bptree.h	/^    struct node *parent;$/;"	m	struct:node	typeref:struct:node::node
+pdfdir	build/Makefile	/^pdfdir = ${docdir}$/;"	m
+peer	wireway.h	/^    struct point_tag *peer;$/;"	m	struct:bridge_point_tag	typeref:struct:bridge_point_tag::point_tag
+peer	wireway.h	/^    struct point_tag *peer[2];$/;"	m	struct:wireway_tag	typeref:struct:wireway_tag::point_tag
+pkgdatadir	build/Makefile	/^pkgdatadir = $(datadir)\/wireway$/;"	m
+pkgincludedir	build/Makefile	/^pkgincludedir = $(includedir)\/wireway$/;"	m
+pkglibdir	build/Makefile	/^pkglibdir = $(libdir)\/wireway$/;"	m
+pkglibexecdir	build/Makefile	/^pkglibexecdir = $(libexecdir)\/wireway$/;"	m
+point	wireway.h	/^}point;$/;"	t	typeref:struct:point_tag
+point_bridge	wireway.h	12;"	d
+point_bridge_peer	wireway.h	13;"	d
+point_bridge_slave	wireway.h	14;"	d
+point_in	wireway.h	6;"	d
+point_joint	wireway.h	11;"	d
+point_list	wireway.h	/^    struct list_head point_list;$/;"	m	struct:wireway_tag	typeref:struct:wireway_tag::list_head
+point_out	wireway.h	7;"	d
+point_peer	wireway.h	10;"	d
+point_size	bptree.h	5;"	d
+point_tag	wireway.h	/^typedef struct point_tag$/;"	s
+pointers	bptree.h	/^    void *pointers[5];$/;"	m	struct:node
+prefetch	list.h	5;"	d
+prefix	build/Makefile	/^prefix = \/usr\/local$/;"	m
+prev	list.h	/^    struct list_head *next,*prev;$/;"	m	struct:list_head	typeref:struct:list_head::
+print_bridge_point	func.c	/^void print_bridge_point(bridge_point *b)$/;"	f
+print_peer_point	func.c	/^void print_peer_point(point *p)$/;"	f
+print_tree	bptree.c	/^void print_tree(node *root)$/;"	f
+print_wireway	func.c	/^void print_wireway()$/;"	f
+print_wireway_detail	func.c	/^void print_wireway_detail(wireway *w)$/;"	f
+prior	wireway.h	/^    int prior;$/;"	m	struct:location_tag
+program_details	missing	/^program_details ()$/;"	f
+program_transform_name	build/Makefile	/^program_transform_name = s,x,x,$/;"	m
+prototypes	configure	/^   function prototypes and stuff, but not '\\xHH' hex character constants.$/;"	f
+psdir	build/Makefile	/^psdir = ${docdir}$/;"	m
+queue	bptree.h	/^typedef struct queue {$/;"	s
+queue	bptree.h	/^} queue;$/;"	t	typeref:struct:queue
+rear	bptree.h	/^    int rear;$/;"	m	struct:queue
+record	bptree.h	/^typedef struct record {$/;"	s
+record	bptree.h	/^} record;$/;"	t	typeref:struct:record
+remove_entry	bptree.c	/^void *remove_entry(node *nd, int index)$/;"	f
+save_data	save.c	/^int save_data(int id,void* data,int len)$/;"	f
+save_key	save.c	/^int save_key(char *key)$/;"	f
+sbindir	build/Makefile	/^sbindir = ${exec_prefix}\/sbin$/;"	m
+set_base_from	depcomp	/^set_base_from ()$/;"	f
+set_bit	bitops.h	/^static inline void set_bit(int nr, unsigned long *addr)$/;"	f
+set_dir_from	depcomp	/^set_dir_from ()$/;"	f
+set_list_type	list.h	/^static inline void set_list_type(struct list_head *head,char type)$/;"	f
+sharedstatedir	build/Makefile	/^sharedstatedir = ${prefix}\/com$/;"	m
+size	bptree.c	/^int size = 5;  \/\/ number of pointers of each node$/;"	v
+size	bptree.h	/^    int size;$/;"	m	struct:queue
+size	save.c	/^    int  size;$/;"	m	struct:storage_zone_tag	file:
+slow_bitmap_and	bitmap.c	/^int slow_bitmap_and(unsigned long *dst, const unsigned long *bitmap1,$/;"	f
+slow_bitmap_andnot	bitmap.c	/^int slow_bitmap_andnot(unsigned long *dst, const unsigned long *bitmap1,$/;"	f
+slow_bitmap_complement	bitmap.c	/^void slow_bitmap_complement(unsigned long *dst, const unsigned long *src,$/;"	f
+slow_bitmap_empty	bitmap.c	/^int slow_bitmap_empty(const unsigned long *bitmap, int bits)$/;"	f
+slow_bitmap_equal	bitmap.c	/^int slow_bitmap_equal(const unsigned long *bitmap1,$/;"	f
+slow_bitmap_full	bitmap.c	/^int slow_bitmap_full(const unsigned long *bitmap, int bits)$/;"	f
+slow_bitmap_intersects	bitmap.c	/^int slow_bitmap_intersects(const unsigned long *bitmap1,$/;"	f
+slow_bitmap_or	bitmap.c	/^void slow_bitmap_or(unsigned long *dst, const unsigned long *bitmap1,$/;"	f
+slow_bitmap_xor	bitmap.c	/^void slow_bitmap_xor(unsigned long *dst, const unsigned long *bitmap1,$/;"	f
+small_nbits	bitmap.h	66;"	d
+src	wireway.h	/^    int src;$/;"	m	struct:wireway_fib_tag
+srcdir	build/Makefile	/^srcdir = ..$/;"	m
+state	wireway.h	/^    char state;$/;"	m	struct:point_tag
+state	wireway.h	/^    int state;$/;"	m	struct:wireway_tag
+storage_path	save.c	8;"	d	file:
+storage_zone	save.c	/^}storage_zone;$/;"	t	typeref:struct:storage_zone_tag	file:
+storage_zone_tag	save.c	/^typedef struct storage_zone_tag$/;"	s	file:
+subdir	build/Makefile	/^subdir = .$/;"	m
+sysconfdir	build/Makefile	/^sysconfdir = ${prefix}\/etc$/;"	m
+tardir	build/Makefile	/^	tardir=$(distdir) && $(am__tar) | BZIP2=$${BZIP2--9} bzip2 -c >$(distdir).tar.bz2$/;"	m
+tardir	build/Makefile	/^	tardir=$(distdir) && $(am__tar) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz$/;"	m
+tardir	build/Makefile	/^	tardir=$(distdir) && $(am__tar) | XZ_OPT=$${XZ_OPT--e} xz -c >$(distdir).tar.xz$/;"	m
+tardir	build/Makefile	/^	tardir=$(distdir) && $(am__tar) | compress -c >$(distdir).tar.Z$/;"	m
+tardir	build/Makefile	/^	tardir=$(distdir) && $(am__tar) | lzip -c $${LZIP_OPT--9} >$(distdir).tar.lz$/;"	m
+target_alias	build/Makefile	/^target_alias = $/;"	m
+test_and_change_bit	bitops.h	/^static inline int test_and_change_bit(int nr, unsigned long *addr)$/;"	f
+test_and_clear_bit	bitops.h	/^static inline int test_and_clear_bit(int nr, unsigned long *addr)$/;"	f
+test_and_set_bit	bitops.h	/^static inline int test_and_set_bit(int nr, unsigned long *addr)$/;"	f
+test_bit	bitops.h	/^static inline int test_bit(int nr, const unsigned long *addr)$/;"	f
+test_bulk_load	bptree.c	/^void test_bulk_load(void)$/;"	f
+test_delete	bptree.c	/^node *test_delete(node *root)$/;"	f
+test_find	bptree.c	/^void test_find(node *root)$/;"	f
+test_insert	bptree.c	/^node *test_insert(node *root)$/;"	f
+test_varargs_macros	configure	/^  test_varargs_macros ();$/;"	f
+test_wireway	test_wireway.c	/^void test_wireway()$/;"	f
+test_wireway1	test_wireway.c	/^void test_wireway1()$/;"	f
+test_wireway2	test_wireway.c	/^void test_wireway2()$/;"	f
+top_build_prefix	build/Makefile	/^top_build_prefix = $/;"	m
+top_builddir	build/Makefile	/^top_builddir = .$/;"	m
+top_distdir	build/Makefile	/^top_distdir = $(distdir)$/;"	m
+top_srcdir	build/Makefile	/^top_srcdir = ..$/;"	m
+total_count	save.c	/^    int  total_count;$/;"	m	struct:storage_zone_tag	file:
+transform	build/Makefile	/^transform = $(program_transform_name)$/;"	m
+type	wireway.h	/^    char type;    $/;"	m	struct:bridge_point_tag
+type	wireway.h	/^    char type;$/;"	m	struct:joint_point_tag
+type	wireway.h	/^    char type;$/;"	m	struct:point_tag
+type	wireway.h	/^    int type;$/;"	m	struct:location_tag
+uid	wireway.h	/^    int uid;$/;"	m	struct:location_tag
+uint32_t	bitops.h	/^typedef unsigned int uint32_t ;$/;"	t
+uint64_t	bitops.h	/^typedef unsigned long long uint64_t ;$/;"	t
+update_wireway_fib	func.c	/^void update_wireway_fib(point *p,wireway *srcw)$/;"	f
+used_count	save.c	/^    int  used_count;$/;"	m	struct:storage_zone_tag	file:
+value	bptree.h	/^    int value;$/;"	m	struct:record
+wire	wireway.h	/^    struct wireway_tag *wire;$/;"	m	struct:bridge_point_tag	typeref:struct:bridge_point_tag::wireway_tag
+wire	wireway.h	/^    struct wireway_tag *wire;$/;"	m	struct:point_tag	typeref:struct:point_tag::wireway_tag
+wire_active	wireway.h	18;"	d
+wire_attaching	wireway.h	17;"	d
+wire_init	wireway.h	16;"	d
+wireway	wireway.h	/^}wireway;$/;"	t	typeref:struct:wireway_tag
+wirewayTree	func.c	/^node *wirewayTree = NULL;$/;"	v
+wireway_LDADD	build/Makefile	/^wireway_LDADD = $(LDADD)$/;"	m
+wireway_OBJECTS	build/Makefile	/^wireway_OBJECTS = $(am_wireway_OBJECTS)$/;"	m
+wireway_SOURCES	build/Makefile	/^wireway_SOURCES = func.h wireway.h test_wireway.c func.c bptree.c save.c btree.h save.h bitmap.c bitops.c$/;"	m
+wireway_fib	wireway.h	/^}wireway_fib;$/;"	t	typeref:struct:wireway_fib_tag
+wireway_fib_tag	wireway.h	/^typedef struct wireway_fib_tag$/;"	s
+wireway_tag	wireway.h	/^typedef struct wireway_tag$/;"	s
+zone_id	save.c	/^    int  zone_id;$/;"	m	struct:storage_zone_tag	file:
+zone_index_mask	save.c	12;"	d	file:
+zone_list	save.c	/^storage_zone zone_list[] =$/;"	v
+zone_name	save.c	/^    char zone_name[32];$/;"	m	struct:storage_zone_tag	file:
+zone_type	save.c	/^    int  zone_type;$/;"	m	struct:storage_zone_tag	file:
+zone_type	save.c	/^enum zone_type$/;"	g	file:
