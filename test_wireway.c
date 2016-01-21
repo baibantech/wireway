@@ -64,6 +64,7 @@ int attach_wireway(char *name,int addr)
             default:printf("wire state error \r\n");break;
 
         }
+        
         return 0;
     }            
     return 1;

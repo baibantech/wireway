@@ -31,6 +31,7 @@ typedef struct point_tag
     struct list_head list;
     struct list_head fib;
     struct wireway_tag *wire;
+    int index;
     int  addr;
     struct location_tag *location;
     char dest;
@@ -60,6 +61,7 @@ typedef struct point_desc_block
     int type;
     int state; 
     int dest;
+    int index;
     int addr;
     unsigned long location_id;
     unsigned long next_point_id;    

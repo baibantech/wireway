@@ -71,6 +71,7 @@ wireway *load_wireway_node(unsigned long wireway_id)
                     p->dest = block->point_block[i].dest;
                     p->addr = block->point_block[i].addr;
                     p->state = block->point_block[i].state;
+                    p->index = block->point_block[i].index;
                     if(0 == peer_num)
                     {   
                         w->peer[0] = p;
@@ -146,7 +147,7 @@ int init_wireway(wireway *w,char *name)
     
     block->type = 0;
     block->point_num = 2;
-     
+    block->state = w->state; 
 
     for(i =0; i < 2 ; i++)
     { 
@@ -168,11 +169,13 @@ int init_wireway(wireway *w,char *name)
         p->state =0;
         w->peer[i] = p;
         p->type = point_peer;
+        p->index = i;
 
         block->point_block[i].type = point_peer;
         block->point_block[i].dest = 3;
         block->point_block[i].addr = 0xEFEFEFEF;
-        block->point_block[i].state = 0;    
+        block->point_block[i].state = 0;
+        block->point_block[i].index = i;    
     }
         
     block->name_id = save_name(name);
@@ -505,6 +508,7 @@ void print_peer_point(point *p)
 
     printf("point state: %d\r\n",p->state);
     printf("point addr:0x%x\r\n",p->addr);
+    printf("point index :%d\r\n",p->index);
 
     list_for_each(fib,&p->fib)
     {
