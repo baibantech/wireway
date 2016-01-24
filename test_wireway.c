@@ -64,7 +64,11 @@ int attach_wireway(char *name,int addr)
             default:printf("wire state error \r\n");break;
 
         }
-        
+        w->block->point_block[p->index].state = p->state;
+        w->block->point_block[p->index].addr  = p->addr;
+        w->block->state = w->state;        
+        save_wireway_block(w->block);
+ 
         return 0;
     }            
     return 1;
@@ -213,6 +217,7 @@ void test_wireway2()
 
 
    create_wireway("chn/name1");
+   attach_wireway("chn/name1",0x1234);
    print_wireway();   
    #if 0
    create_wireway("chn/name2");

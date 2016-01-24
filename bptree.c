@@ -144,6 +144,9 @@ void *find(node *root, char *key)
         ;
     if (i == leaf->num_keys)
         return NULL;
+    if(NULL == leaf->pointers[i]){
+       return load_wireway_node(leaf->block->pointers_id[i]);
+    }
     return leaf->pointers[i];
 }
 
