@@ -56,35 +56,41 @@ typedef struct joint_point_tag
     char type;
 }joint_point;
 
-typedef struct point_desc_block
+typedef struct point_desc
 {
     int type;
-    int state; 
-    int dest;
     int index;
-    int addr;
-    unsigned long location_id;
-    unsigned long next_point_id;    
+    union
+    {
+        struct point_block_peer
+        {
+            int type;
+            int index;
+            int state; 
+            int dest;
+            int addr;
+        }peer;
+        
+        struct joint_block_peer
+        {
+            unsigned long next_wireway_id;
+            int point_index;
+        }jpeer;
+
+        struct bridge_master
+        {
+            unsigned long peer_wireway_name_id;
+            int peer_point_index;
+        }bmaser;
+
+        struct bridge_slave
+        {
+            unsigned long peer_wireway_name_id;
+            int br_index;
+        }bslave;
+    }node_desc;
+
 }point_desc_block;
-        
-
-typedef struct bridge_desc_block
-{
-    int type;
-    unsigned long wireway_id;
-        
-
-    
-
-}bridge_desc_block;
-
-typedef struct bridge_point_desc
-{
-    unsigned long slave_wireway_id;
-    int insert_index;
-    
-};
-
 
 typedef struct wireway_block
 {
@@ -95,8 +101,13 @@ typedef struct wireway_block
     unsigned long wireway_id;
     
     point_desc_block point_block[MAX_POINT_NUM_PER_BLOCK];
-    unsigned long next_block_id; 
      
+    union
+    {
+        unsigned long next_block_id;
+        struct wireway_block *next_block_ptr;
+    }next_block;
+
 }wireway_block;
 
 typedef struct wireway_tag
@@ -105,6 +116,7 @@ typedef struct wireway_tag
     struct wireway_tag *next;
     
     struct point_tag *peer[2];
+    int point_num;
     struct list_head point_list;
     wireway_block *block;
     int state;

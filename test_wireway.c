@@ -39,6 +39,17 @@ wireway* create_wireway(char *name)
     
     return w;
 }
+wireway *restore_wireway(char *name)
+{
+
+
+
+
+
+}
+
+
+
 
 int attach_wireway(char *name,int addr)
 {
@@ -64,10 +75,7 @@ int attach_wireway(char *name,int addr)
             default:printf("wire state error \r\n");break;
 
         }
-        w->block->point_block[p->index].state = p->state;
-        w->block->point_block[p->index].addr  = p->addr;
-        w->block->state = w->state;        
-        save_wireway_block(w->block);
+        save_wireway(w);
  
         return 0;
     }            
@@ -94,6 +102,8 @@ int bridge_wireway(char *srcname,point *p)
     b->dest = p->dest;
     b->wire = srcw;
     p->type = point_bridge_peer;
+
+    w->block->point_block[p->index].type = p->type;
 
     set_list_type(&b->bridge,point_bridge_slave);
     if(p->list.prev == &p->wire->point_list)     

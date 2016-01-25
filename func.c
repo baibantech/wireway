@@ -68,10 +68,10 @@ wireway *load_wireway_node(unsigned long wireway_id)
                     INIT_LIST_HEAD(&p->fib); 
                     set_list_type(&p->list,point_peer);
                     
-                    p->dest = block->point_block[i].dest;
-                    p->addr = block->point_block[i].addr;
-                    p->state = block->point_block[i].state;
-                    p->index = block->point_block[i].index;
+                    p->dest = pblock->node_desc.peer.dest;
+                    p->addr = pblock->node_desc.peer.addr;
+                    p->state = pblock->node_desc.peer.state;
+                    p->index = pblock->node_desc.peer.index;
                     if(0 == peer_num)
                     {   
                         w->peer[0] = p;
@@ -106,6 +106,7 @@ wireway *alloc_wireway_inst()
     {
         memset(w,0,sizeof(wireway));
         block = malloc(sizeof(wireway_block));
+        memset(block,0, sizeof(wireway_block));
         if(block)
         {
             block->wireway_id = alloc_wireway_block();
@@ -129,6 +130,77 @@ wireway *alloc_wireway_inst()
     return NULL;
 }
 
+int save_wireway(wireway *srcw)
+{
+    struct list_head *pos;
+    int point_count = 0;
+    wireway_block *block = srcw->block;
+    wireway_block *tmp = block;
+    block->state = srcw->state;
+    block->point_num = srcw->point_num;
+    
+    if(block->name_id == -1)
+    {
+        block->name_id = save_name(srcw->name);
+    }
+    if(-1 == block->name_id){
+        return 1;
+    }
+
+    list_for_each(pos,&srcw->point_list)
+    {
+        
+        if(point_count++ > MAX_POINT_NUM_PER_BLOCK)
+        {
+            block = (wireway_block*) malloc(sizeof(wireway_block));
+            memset(block,0,sizeof(wireway_block));
+            block->wireway_id = -1;
+            block->wireway_id = alloc_wireway_block();
+            if(block->wireway_id == -1)
+            {
+                return 1;
+            }
+            tmp->next_block.next_block_ptr = block;
+            tmp = block;
+            point_count = point_count - MAX_POINT_NUM_PER_BLOCK;
+        }
+
+        switch(pos->node_type)
+        {
+            case point_peer:
+                {
+                    point_desc_block *desc = &tmp->point_block[point_count -1];                     point *p = list_entry(pos,point,list);
+                    desc->node_desc.peer.type  = p->type;
+                    desc->node_desc.peer.index = point_count - 1;
+                    desc->node_desc.peer.state = p->state;
+                    desc->node_desc.peer.dest = p->dest;
+                    desc->node_desc.peer.addr = p->addr;
+                }
+                break;
+
+            case point_bridge_peer:
+                printf("case point_bridge_peer \r\n");
+                break;
+
+            case point_bridge_slave:
+                printf("case point_bridge_slave \r\n");
+                break;
+            
+            case point_joint:
+                printf("case point_joint \r\n");
+                break;
+                
+            default:
+                printf("default \r\n");
+                break;
+
+        }
+
+    }
+    save_wireway_block(srcw->block);
+    return 0;
+}
+
 int init_wireway(wireway *w,char *name)
 {
     point *p;
@@ -145,10 +217,6 @@ int init_wireway(wireway *w,char *name)
     w->state = wire_init;
     INIT_LIST_HEAD(&w->point_list);
     
-    block->type = 0;
-    block->point_num = 2;
-    block->state = w->state; 
-
     for(i =0; i < 2 ; i++)
     { 
         p = (point*)malloc(sizeof(point));
@@ -171,20 +239,10 @@ int init_wireway(wireway *w,char *name)
         p->type = point_peer;
         p->index = i;
 
-        block->point_block[i].type = point_peer;
-        block->point_block[i].dest = 3;
-        block->point_block[i].addr = 0xEFEFEFEF;
-        block->point_block[i].state = 0;
-        block->point_block[i].index = i;    
     }
-        
-    block->name_id = save_name(name);
-    if(block->name_id != -1){
-        save_wireway_block(block);
-    }
-    else {
-        return 1;
-    }
+    w->point_num = 2;    
+    save_wireway(w);
+
     return 0;
 }
 
