@@ -103,8 +103,6 @@ int bridge_wireway(char *srcname,point *p)
     b->wire = srcw;
     p->type = point_bridge_peer;
 
-    w->block->point_block[p->index].type = p->type;
-
     set_list_type(&b->bridge,point_bridge_slave);
     if(p->list.prev == &p->wire->point_list)     
     {

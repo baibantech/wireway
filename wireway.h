@@ -6,16 +6,23 @@
 #define point_in 1
 #define point_out 2
 
-
+/* point type define*/
 #define point_peer 0
 #define point_joint 1
 #define point_bridge 2
 #define point_bridge_peer 3
 #define point_bridge_slave 4
 
+/* wireway state define */
 #define wire_init 1
 #define wire_attaching 2
 #define wire_active 3
+
+/* point state define*/
+
+#define point_idle 1
+#define point_active 2
+
 
 #define MAX_POINT_NUM_PER_BLOCK 12
 typedef struct location_tag
@@ -38,6 +45,17 @@ typedef struct point_tag
     char state;
     char type;
 }point;
+
+#if 0
+typedef struct bridge_slave_point_tag
+{
+    struct list_head brdige;
+    
+
+
+}
+#endif
+
 
 typedef struct bridge_point_tag
 {

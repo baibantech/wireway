@@ -233,9 +233,9 @@ int init_wireway(wireway *w,char *name)
         }
         
         p->wire = w;
-        p->dest = 3;
+        p->dest = point_in | point_out;
         p->addr  =0xEFEFEFEF;
-        p->state =0;
+        p->state = point_idle ;
         w->peer[i] = p;
         p->type = point_peer;
         p->index = i;
@@ -251,9 +251,9 @@ point* get_unused_peer(wireway *w)
 {
     
     int i;
-    for(i = 0 ;i<2; i++)
+    for(i = 0 ;i < 2; i++)
     {
-        if(0 == w->peer[i]->state)
+        if(point_idle == w->peer[i]->state)
         {
             return w->peer[i];   
         }
