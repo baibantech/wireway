@@ -57,7 +57,7 @@ int attach_wireway(char *name,int addr)
     point *p = get_unused_peer(w);
     if(p != NULL)
     {
-        p->state = 1;
+        p->state = point_active;
         p->addr = addr;
         switch(w->state)
         {
@@ -85,10 +85,10 @@ int attach_wireway(char *name,int addr)
 
 int bridge_wireway(char *srcname,point *p)
 {
-    wireway *srcw = lookup_wireway(srcname);
+    wireway *dstw = lookup_wireway(srcname);
     bridge_point *b; 
-    wireway *w = p->wire;
-    if(!srcw || ((srcw != NULL) && (srcw->state != wire_active)) ) 
+    wireway *srcw = p->wire;
+    if(!dstw || ((dstw != NULL) && (dstw->state != wire_active)) ) 
     {
         return 1;
     }
@@ -100,45 +100,46 @@ int bridge_wireway(char *srcname,point *p)
     
     b->peer = p;
     b->dest = p->dest;
-    b->wire = srcw;
+    b->wire = dstw;
     p->type = point_bridge_peer;
 
-    set_list_type(&b->bridge,point_bridge_slave);
-    if(p->list.prev == &p->wire->point_list)     
+    set_list_type(&b->bridge_slave.bridge,point_bridge_slave);
+    b->bridge_slave.type = point_bridge_slave;
+
+    if(srcw->peer[0] == p)
     {
-        list_add(&b->bridge,&p->wire->point_list);
+        list_add(&b->bridge_slave.bridge,&srcw->point_list);
+    }else if(srcw->peer[1] == p) {
+        list_add(&b->bridge_slave.bridge,&p->list);
     }else {
-        list_add(&b->bridge,&p->list);
+        printf("error in bridge\r\n");
+        return 1;
     }
+   
 
     set_list_type(&b->list,point_bridge);
-    /*
-    if(srcw->state != wire_active)
-    {
-        list_add(&b->list,&srcw->tmp_list);
-        return 0;
-    }
-    else*/
+    b->type = point_bridge;
+
     {
 
-        insert_bridge_point(b,srcw);
+        insert_bridge_point(b,dstw);
     
-        if(p->state == 0)
+        if(p->state == point_idle)
         {
             assgin_bridge_location(b);
-            p->state = 1;
+            p->state = point_active;
             
-            switch(w->state)
+            switch(srcw->state)
             {
                 case wire_init: 
                 {
-                    w->state = wire_attaching; 
+                    srcw->state = wire_attaching; 
                     break;
                 }
                 case wire_attaching: 
                 {
-                    w->state = wire_active;
-                    update_wireway_fib(p,w);
+                    srcw->state = wire_active;
+                    update_wireway_fib(p,srcw);
                     break;
                 }
                 default:printf("wire state error \r\n");break;
@@ -147,9 +148,9 @@ int bridge_wireway(char *srcname,point *p)
         }
         else
         {
-            if(w->state == wire_active)
+            if(srcw->state == wire_active)
             {
-                update_wireway_fib(p,srcw);
+                update_wireway_fib(p,dstw);
             }        
         }
     }
@@ -226,6 +227,7 @@ void test_wireway2()
 
    create_wireway("chn/name1");
    attach_wireway("chn/name1",0x1234);
+   attach_wireway("chn/name1",0x5678);
    print_wireway();   
    #if 0
    create_wireway("chn/name2");

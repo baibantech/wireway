@@ -46,24 +46,25 @@ typedef struct point_tag
     char type;
 }point;
 
-#if 0
+
 typedef struct bridge_slave_point_tag
 {
-    struct list_head brdige;
-    
-
-
-}
-#endif
+    struct list_head bridge;
+    struct wireway_tag *wire;
+    char type;
+    int index;
+}bridge_slave;
 
 
 typedef struct bridge_point_tag
 {
     struct list_head list;
-    struct list_head bridge;
+   // struct list_head bridge;
     struct wireway_tag *wire;
     struct point_tag *peer;
     struct point_tag *location_peer;
+    struct bridge_slave_point_tag bridge_slave;
+    int index;
     char dest;
     char type;    
 }bridge_point;

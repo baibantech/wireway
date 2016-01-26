@@ -272,6 +272,7 @@ wireway_fib* Alloc_fib()
 bridge_point *get_relate_bridge(point *p)
 {
     bridge_point *b = NULL;
+    bridge_slave *slave = NULL;
 
     if(p->type != point_bridge_peer)
     {
@@ -281,18 +282,18 @@ bridge_point *get_relate_bridge(point *p)
     
     if(p == p->wire->peer[0])
     {
-        b = list_entry(p->list.prev,bridge_point,bridge);
-
+        slave = list_entry(p->list.prev,bridge_slave,bridge);
     }
     else if(p == p->wire->peer[1])
     {
-        b = list_entry(p->list.next,bridge_point,bridge);
+        slave = list_entry(p->list.next,bridge_slave,bridge);
     }
     else
     {
         return NULL;
     }
-    
+     
+    b = list_entry(slave,bridge_point,bridge_slave);
     return b;
 
 }
