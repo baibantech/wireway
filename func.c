@@ -107,6 +107,7 @@ wireway *alloc_wireway_inst()
         memset(w,0,sizeof(wireway));
         block = malloc(sizeof(wireway_block));
         memset(block,0, sizeof(wireway_block));
+        block->name_id = -1; /*init name id*/
         if(block)
         {
             block->wireway_id = alloc_wireway_block();
