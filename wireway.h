@@ -59,7 +59,6 @@ typedef struct bridge_slave_point_tag
 typedef struct bridge_point_tag
 {
     struct list_head list;
-   // struct list_head bridge;
     struct wireway_tag *wire;
     struct point_tag *peer;
     struct point_tag *location_peer;
@@ -75,7 +74,7 @@ typedef struct joint_point_tag
     char type;
 }joint_point;
 
-typedef struct point_desc
+typedef struct point_desc_block
 {
     int type;
     int index;

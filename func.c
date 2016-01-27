@@ -6,6 +6,7 @@
 #include "bptree.h"
 #include "save_func.h"
 void list_wireway_tree(node *nd);
+wireway_fib* Alloc_fib();
 
 node *wirewayTree = NULL;
 
@@ -26,17 +27,78 @@ void wireway_tree_restore()
     print_tree(wirewayTree);
     return;
 }
-
-
-wireway *restore_wireway_inst(wireway_block *block)
+restore_fib_by_point(point *p)
 {
-    
+    struct list_head *pos;
+    int index = p->index;
+    int i = 0;
+    point *tmp;
+    wireway *srcw= p->wire;
+    wireway_fib *fib;
+
+    list_for_each(pos,&srcw->point_list)
+    {
+        if(i <= index)
+        {
+            i++;
+            continue;
+        }    
+        switch(pos->node_type)
+        {
+            case point_peer:
+            { 
+                tmp = list_entry(pos,point,list);
+                if((p->dest & point_in)&&(tmp->dest & point_out)) 
+                {
+                    fib = Alloc_fib();
+                    fib->src = tmp->addr;
+                    fib->dst = p->addr;
+                    list_add(&fib->list,&tmp->fib);
+                }
+                if((p->dest &point_out)&&(tmp->dest & point_in)) {
+                    fib = Alloc_fib();
+                    fib->dst = tmp->addr;
+                    fib->src = p->addr;
+                    list_add(&fib->list,&p->fib);
+                }
+                
+                break;
+            }
+            
+            default: printf("case default \r\n");
+
+        }
+        i++;
+    }
+
+}
+
+int restore_wireway_fib(wireway *srcw)
+{
+    struct list_head *pos;
+    int index = 0;
+    point *tmp;
+    wireway_fib *fib;
+    bridge_point *b;
+
+    list_for_each(pos,&srcw->point_list)
+    {        
+        switch(pos->node_type)
+        {
+            case point_peer:
+            {                
+                tmp = (point*)list_entry(pos,point,list);
+                restore_fib_by_point(tmp);
+                break;
+            }
 
 
+            default: printf("case default \r\n");break;
 
+        }
+    }
 
-
-
+    return 0;
 }
 
 wireway *load_wireway_node(unsigned long wireway_id)
@@ -72,6 +134,7 @@ wireway *load_wireway_node(unsigned long wireway_id)
                     p->addr = pblock->node_desc.peer.addr;
                     p->state = pblock->node_desc.peer.state;
                     p->index = pblock->node_desc.peer.index;
+                    p->wire = w;
                     if(0 == peer_num)
                     {   
                         w->peer[0] = p;
@@ -88,8 +151,10 @@ wireway *load_wireway_node(unsigned long wireway_id)
                     
                     default : printf("error in line %d\r\n",__LINE__); break;
                 }    
-
             }
+
+            restore_wireway_fib(w);
+            
             return w;            
         }     
 
@@ -411,6 +476,14 @@ void update_wireway_fib(point *p,wireway *srcw)
         }
     }
 }
+
+
+
+
+
+
+
+
 void insert_wireway_tree(wireway *w)
 {
     if(NULL == wirewayTree)
