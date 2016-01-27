@@ -626,6 +626,49 @@ void assgin_bridge_location(bridge_point *b)
     return;
 }
 
+void assign_point_index(wireway *w)
+{
+    struct list_head *pos;
+    int index = 0;
+    
+    list_for_each(pos,&w->point_list)
+    {
+        switch(pos->node_type)
+        {
+            case point_peer:
+            case point_bridge_peer:
+            {
+                point *p = list_entry(pos,point,list);
+                p->index = index;
+                break;
+            } 
+            
+            case point_bridge:
+            {
+                bridge_point *b = list_entry(pos,bridge_point,list);
+                b->index = index;
+                break;
+            }
+            case point_bridge_slave:
+            {
+                bridge_slave *slave = list_entry(pos,bridge_slave,bridge);
+                slave->index = index;
+                break;
+            }
+            case point_joint:
+            {
+                joint_point *j =  list_entry(pos,joint_point,list);
+                j->index = index;
+                break;
+            }
+
+            default: printf("point type error \r\n"); break;
+
+        }
+        index++;
+    }
+}
+
 void print_bridge_point(bridge_point *b)
 {
     

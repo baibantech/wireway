@@ -116,6 +116,7 @@ int bridge_wireway(char *srcname,point *p)
         return 1;
     }
    
+    assign_point_index(srcw);
 
     set_list_type(&b->list,point_bridge);
     b->type = point_bridge;
@@ -123,6 +124,7 @@ int bridge_wireway(char *srcname,point *p)
     {
 
         insert_bridge_point(b,dstw);
+        assign_point_index(dstw);
     
         if(p->state == point_idle)
         {
@@ -173,12 +175,12 @@ void test_wireway()
     wireway *w;
     create_wireway("/chn/name1");
     w =  create_wireway("/chn/name2");
-    attach_wireway("/chn/name1",0xabababab);
+    attach_wireway("/chn/name1",0x1234);
     //attach_wireway("/chn/name1",0xbcbcbcbc);
-    attach_wireway("/chn/name1",0xcdcdcdcd);    
+    attach_wireway("/chn/name1",0x5678);    
 
 
-    attach_wireway("/chn/name2",0xedededed);
+    attach_wireway("/chn/name2",0x9012);
     p = get_unused_peer(w);
     bridge_wireway("/chn/name1",p);
     print_wireway();
@@ -258,6 +260,6 @@ int main(void)
 {
     disk_storage_init();
     wireway_tree_restore();
-    test_wireway2();
+    test_wireway();
     return 0;
 }

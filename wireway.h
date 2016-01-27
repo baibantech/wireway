@@ -68,9 +68,12 @@ typedef struct bridge_point_tag
     char type;    
 }bridge_point;
 
+   // struct list_head bridge;
+
 typedef struct joint_point_tag
 {
     struct list_head list;
+    int index;
     char type;
 }joint_point;
 
