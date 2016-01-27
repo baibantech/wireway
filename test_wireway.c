@@ -156,6 +156,8 @@ int bridge_wireway(char *srcname,point *p)
             }        
         }
     }
+    save_wireway(srcw);
+    save_wireway(dstw);
 
 }
 /*too single direction wireway construct a double direction wireway*/ 
@@ -187,7 +189,12 @@ void test_wireway()
 }
 
 
-
+void test_restore_wireway()
+{
+    restore_wireway("/chn/name1");
+    restore_wireway("/chn/name2");
+    print_wireway();
+}
 
 void test_wireway1()
 {
@@ -260,6 +267,13 @@ int main(void)
 {
     disk_storage_init();
     wireway_tree_restore();
-    test_wireway();
+    if(wireway_tree_empty())
+    {
+        test_wireway();
+    }
+    else
+    {
+        test_restore_wireway();
+    } 
     return 0;
 }

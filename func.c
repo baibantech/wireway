@@ -27,6 +27,14 @@ void wireway_tree_restore()
     print_tree(wirewayTree);
     return;
 }
+int wireway_tree_empty()
+{
+    if(wirewayTree)
+    return 0;
+
+    return 1;
+
+}
 restore_fib_by_point(point *p)
 {
     struct list_head *pos;
