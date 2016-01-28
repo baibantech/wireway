@@ -680,12 +680,60 @@ void assign_point_index(wireway *w)
     w->point_num = index;
 }
 
+void print_point_type(int type)
+{
+    switch(type)
+    {
+        case point_peer:
+            printf("point type :point_peer\r\n");
+            break;
+        case point_bridge_peer:
+            printf("point type :point_bridge_peer\r\n");
+            break;
+        case point_bridge:
+            printf("point type :point_bridge\r\n");
+            break;
+        case point_joint:
+            printf("point type :point_joint\r\n");
+            break;
+        case point_bridge_slave:
+            printf("point type :point_bridge_slave\r\n");
+            break;
+        default:
+            printf("point type :error type\r\n");
+            break;
+    }
+}
+
 void print_bridge_point(bridge_point *b)
 {
+    wireway *srcw = b->wire;
+    point *peer = b->peer;
+    wireway *dstw = peer->wire;
+    printf("point index :%d\r\n",b->index);
+    print_point_type(b->type);
+    printf("bridge peer wireway name is %s \r\n",dstw->name);
+    printf("bridge peer point index is %d\r\n",peer->index);
     
+    if(b->location_peer)
+    {
+        printf("bridge point addr is assigned by src wireway \r\n");
+        printf("bridge point assign peer index %d\r\n",b->location_peer->index);
+    }
+    else
+    {
+        printf("bridge point addr is assiged default \r\n");
+    }
 
-
-
+    printf("\r\n");
+}
+void print_bridge_slave(bridge_slave *slave)
+{
+    bridge_point *b = list_entry(slave,bridge_point,bridge_slave);
+    printf("point index :%d\r\n",slave->index);
+    print_point_type(slave->type); 
+    printf("point bridge to wireway %s\r\n",b->wire->name);
+    printf("\r\n");
 }
 
 void print_peer_point(point *p)
@@ -694,7 +742,7 @@ void print_peer_point(point *p)
     wireway_fib *f;
 
     printf("point index :%d\r\n",p->index);
-    printf("point type :%d\r\n", p->type);
+    print_point_type(p->type);
     printf("point state: %d\r\n",p->state);
     printf("point addr:0x%x\r\n",p->addr);
 
@@ -704,6 +752,7 @@ void print_peer_point(point *p)
         printf("fib entry: 0x%x to 0x%x\r\n",f->src,f->dst);
     }
 
+    printf("\r\n");
 }
 
 void print_wireway()
@@ -720,9 +769,11 @@ void print_wireway_detail(wireway *w)
 
     if(NULL == w)
     return;
+    printf("-----------------------------------------\r\n");
     printf("wireway name %s\r\n",w->name);
     printf("wireway state is %d\r\n",w->state);
-    printf("wireway point num is %d\r\n",w->point_num);
+    printf("wireway point num is %d\r\n\r\n",w->point_num);
+
     list_for_each(pos,&w->point_list)
     {          
         switch(pos->node_type)
@@ -732,12 +783,21 @@ void print_wireway_detail(wireway *w)
                 p = list_entry(pos,point,list);
                 print_peer_point(p);
                 break;
-          case point_bridge:      
-                printf("bridge point !!\r\n");
+            case point_bridge:
+            {     
+                bridge_point *b = list_entry(pos,bridge_point,list); 
+                print_bridge_point(b);
+               // printf("bridge point !!\r\n");
                 break;
-          case point_bridge_slave:
-                printf("bridge point slave !!\r\n");
+            }
+            case point_bridge_slave:
+            {    bridge_slave *slave = list_entry(pos,bridge_slave,bridge);
+                print_bridge_slave(slave);
+               // printf("bridge point slave !!\r\n");
                 break;
+            }
+            case point_joint:
+                printf("point joint \r\n");
           default:
                 printf("error\r\n");
                 break;
