@@ -251,7 +251,9 @@ int save_wireway(wireway *srcw)
                     desc->node_desc.peer.addr = p->addr;
                 }
                 break;
-
+            case point_bridge:
+                printf("case point_bridge \r\n");
+                break;
             case point_bridge_peer:
                 printf("case point_bridge_peer \r\n");
                 break;
@@ -638,7 +640,7 @@ void assign_point_index(wireway *w)
 {
     struct list_head *pos;
     int index = 0;
-    
+     
     list_for_each(pos,&w->point_list)
     {
         switch(pos->node_type)
@@ -675,6 +677,7 @@ void assign_point_index(wireway *w)
         }
         index++;
     }
+    w->point_num = index;
 }
 
 void print_bridge_point(bridge_point *b)
@@ -690,9 +693,10 @@ void print_peer_point(point *p)
     struct list_head *fib;  
     wireway_fib *f;
 
+    printf("point index :%d\r\n",p->index);
+    printf("point type :%d\r\n", p->type);
     printf("point state: %d\r\n",p->state);
     printf("point addr:0x%x\r\n",p->addr);
-    printf("point index :%d\r\n",p->index);
 
     list_for_each(fib,&p->fib)
     {
@@ -718,13 +722,14 @@ void print_wireway_detail(wireway *w)
     return;
     printf("wireway name %s\r\n",w->name);
     printf("wireway state is %d\r\n",w->state);
+    printf("wireway point num is %d\r\n",w->point_num);
     list_for_each(pos,&w->point_list)
     {          
         switch(pos->node_type)
         {
             case point_peer:
+            case point_bridge_peer:
                 p = list_entry(pos,point,list);
-                printf("point num %d\r\n",i++);
                 print_peer_point(p);
                 break;
           case point_bridge:      
