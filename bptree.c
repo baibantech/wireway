@@ -164,6 +164,20 @@ int is_key_exist(node *root,char *key)
     return 1;
 }
 
+int is_data_in_mem(node *root,char *key)
+{
+    node *leaf;
+    int i;
+    leaf = find_leaf(root, key);
+    if (leaf == NULL)
+        return 0;
+    for (i = 0; i < leaf->num_keys && strcmp(leaf->keys[i], key) != 0; i++)
+        ;
+    if (i == leaf->num_keys || NULL == leaf->pointers[i])
+        return 0;
+    return 1;
+}
+
 node *find_leaf(node *root, char *key)
 {
     node *nd;

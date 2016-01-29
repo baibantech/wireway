@@ -35,6 +35,34 @@ int wireway_tree_empty()
     return 1;
 
 }
+int is_wireway_in_mem(char *name)
+{
+    return is_data_in_mem(wirewayTree,name);
+}
+
+point *get_peer_by_index(wireway *srcw,int index)
+{
+    struct list_head *pos;
+    int i = 0;
+    list_for_each(pos,&srcw->point_list)
+    {
+        if(i++ == index)
+        {
+            if(pos->node_type != point_peer && pos->node_type != point_bridge_peer)
+            {
+                return NULL;
+            }   
+            else
+            {
+                point *p = list_entry(pos,point,list);
+                return p;
+            }
+        }
+    }
+
+    return NULL;
+}
+
 restore_fib_by_point(point *p)
 {
     struct list_head *pos;
@@ -124,6 +152,7 @@ wireway *load_wireway_node(unsigned long wireway_id)
             w->name = read_data(block->name_id);
             w->block = block;
             w->state = block->state;
+            w->point_num = block->point_num;
             INIT_LIST_HEAD(&w->point_list);
             list = &w->point_list;            
             for(i = 0; i < block->point_num ; i++)
@@ -132,30 +161,57 @@ wireway *load_wireway_node(unsigned long wireway_id)
                 switch(pblock->type)    
                 {
                     case point_peer:
-
-                    p = (point*)malloc(sizeof(point));
-                    if(NULL == p) return 1;
-                    INIT_LIST_HEAD(&p->fib); 
-                    set_list_type(&p->list,point_peer);
-                    
-                    p->dest = pblock->node_desc.peer.dest;
-                    p->addr = pblock->node_desc.peer.addr;
-                    p->state = pblock->node_desc.peer.state;
-                    p->index = pblock->node_desc.peer.index;
-                    p->wire = w;
-                    if(0 == peer_num)
-                    {   
-                        w->peer[0] = p;
-                    }
-                    else
+                    case point_bridge_peer:
                     {
-                        w->peer[1] = p;
+                        p = (point*)malloc(sizeof(point));
+                        if(NULL == p) return NULL;
+                        INIT_LIST_HEAD(&p->fib); 
+                        set_list_type(&p->list,point_peer);
+                        
+                        p->dest = pblock->node_desc.peer.dest;
+                        p->addr = pblock->node_desc.peer.addr;
+                        p->state = pblock->node_desc.peer.state;
+                        p->index = pblock->index;
+                        p->type  = pblock->type;
+                        p->wire = w;
+                        if(0 == peer_num)
+                        {   
+                            w->peer[0] = p;
+                        }
+                        else
+                        {
+                            w->peer[1] = p;
+                        }
+                         
+                        peer_num++;
+                        list_add(&p->list,list);
+                        list = &p->list;
+                        break;
                     }
-                     
-                    peer_num++;
-                    list_add(&p->list,list);
-                    list = &p->list;
-                    break;
+                    case point_bridge:
+                    {
+                        unsigned long dst_wireway_name_id = pblock->node_desc.bmaster.peer_wireway_name_id;
+                        char *peer_name = read_data(dst_wireway_name_id);
+                        bridge_point *b = NULL;
+                        if(is_wireway_in_mem(peer_name)){
+
+
+                        }else {
+
+                            b = malloc(sizeof(bridge_point));
+                            b->type = pblock->type;
+                            b->index = pblock->index;
+                            b->dest = pblock->node_desc.bmaster.dest;
+                            b->location_peer_index = pblock->node_desc.bmaster.location_peer_index;
+                            b->point_peer_index = pblock->node_desc.bmaster.peer_point_index;
+                            b->wire = w;                            
+                        }
+                        set_list_type(&b->list,point_bridge);                           
+                        list_add(&b->list,list);
+                        list = &b->list;
+                        break;
+
+                    }
                     
                     default : printf("error in line %d\r\n",__LINE__); break;
                 }    
@@ -238,22 +294,30 @@ int save_wireway(wireway *srcw)
             tmp = block;
             point_count = point_count - MAX_POINT_NUM_PER_BLOCK;
         }
-
+        
+        point_desc_block *desc = &tmp->point_block[point_count -1];
+        desc->index = point_count - 1;
         switch(pos->node_type)
         {
             case point_peer:
-                {
-                    point_desc_block *desc = &tmp->point_block[point_count -1];                     point *p = list_entry(pos,point,list);
-                    desc->node_desc.peer.type  = p->type;
-                    desc->node_desc.peer.index = point_count - 1;
-                    desc->node_desc.peer.state = p->state;
-                    desc->node_desc.peer.dest = p->dest;
-                    desc->node_desc.peer.addr = p->addr;
-                }
+            {
+                point *p = list_entry(pos,point,list);
+                desc->type  = p->type;
+                desc->node_desc.peer.state = p->state;
+                desc->node_desc.peer.dest = p->dest;
+                desc->node_desc.peer.addr = p->addr;
                 break;
+            }
             case point_bridge:
-                printf("case point_bridge \r\n");
+            {
+                bridge_point *b = list_entry(pos,bridge_point,list);
+                desc->type  =  b->type;
+                desc->node_desc.bmaster.location_peer_index = b->location_peer_index;
+                desc->node_desc.bmaster.peer_wireway_name_id = b->bridge_slave.wire->block->name_id;
+                desc->node_desc.bmaster.peer_point_index = b->point_peer_index;
+                desc->node_desc.bmaster.dest = b->dest;
                 break;
+            }
             case point_bridge_peer:
                 printf("case point_bridge_peer \r\n");
                 break;
@@ -395,7 +459,7 @@ void update_wireway_fib(point *p,wireway *srcw)
                 }
  
                 b =  get_relate_bridge(tmp);
-                if(NULL == b->location_peer)
+                if(-1 == b->location_peer_index)
                 {
                     update_wireway_fib(tmp,b->wire);
                 }
@@ -454,9 +518,9 @@ void update_wireway_fib(point *p,wireway *srcw)
                 }
                 else 
                 {
-                    if(b->peer->wire != p->wire)
+                    if(b->bridge_slave.wire != p->wire)
                     {
-                        tmp = b->peer;     
+                        tmp = get_peer_by_index(b->bridge_slave.wire,b->point_peer_index);     
                         if((p->dest & point_in)&&(tmp->dest & point_out)) 
                         {
                             fib = Alloc_fib();
@@ -549,7 +613,6 @@ void insert_bridge_point(bridge_point *b,wireway *src)
 void assgin_point_location(bridge_point  *b)
 {
     wireway *srcw = b->wire;
-    point *p = b->peer;
 
 
 
@@ -624,15 +687,16 @@ void assgin_bridge_location(bridge_point *b)
 
     if(peer1_prio >= peer0_prio)
     {
-        b->peer->addr = peer1->addr;
-        b->location_peer = peer1;
+        point * p = get_peer_by_index(b->bridge_slave.wire,b->point_peer_index);  
+        p->addr = peer1->addr;
+        b->location_peer_index = peer1->index;
     }
     else
     {
-        b->peer->addr = peer0->addr;
-        b->location_peer = peer0;
+        point * p = get_peer_by_index(b->bridge_slave.wire,b->point_peer_index);
+        p->addr = peer0->addr;
+        b->location_peer_index = peer0->index;
     }    
-
     return;
 }
 
@@ -708,17 +772,16 @@ void print_point_type(int type)
 void print_bridge_point(bridge_point *b)
 {
     wireway *srcw = b->wire;
-    point *peer = b->peer;
-    wireway *dstw = peer->wire;
+    wireway *dstw = b->bridge_slave.wire;
     printf("point index :%d\r\n",b->index);
     print_point_type(b->type);
     printf("bridge peer wireway name is %s \r\n",dstw->name);
-    printf("bridge peer point index is %d\r\n",peer->index);
+    printf("bridge peer point index is %d\r\n",b->point_peer_index);
     
-    if(b->location_peer)
+    if(b->location_peer_index != -1)
     {
         printf("bridge point addr is assigned by src wireway \r\n");
-        printf("bridge point assign peer index %d\r\n",b->location_peer->index);
+        printf("bridge point assign peer index %d\r\n",b->location_peer_index);
     }
     else
     {

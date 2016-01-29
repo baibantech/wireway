@@ -97,15 +97,15 @@ int bridge_wireway(char *srcname,point *p)
     {
         return 1;
     }
-    
-    b->peer = p;
+    b->location_peer_index = -1;
+    b->point_peer_index = p->index;
     b->dest = p->dest;
     b->wire = dstw;
     p->type = point_bridge_peer;
 
     set_list_type(&b->bridge_slave.bridge,point_bridge_slave);
     b->bridge_slave.type = point_bridge_slave;
-
+    b->bridge_slave.wire = srcw;
     if(srcw->peer[0] == p)
     {
         list_add(&b->bridge_slave.bridge,&srcw->point_list);

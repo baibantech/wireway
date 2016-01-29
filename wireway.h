@@ -60,9 +60,9 @@ typedef struct bridge_point_tag
 {
     struct list_head list;
     struct wireway_tag *wire;
-    struct point_tag *peer;
-    struct point_tag *location_peer;
     struct bridge_slave_point_tag bridge_slave;
+    int location_peer_index;
+    int point_peer_index;
     int index;
     char dest;
     char type;    
@@ -79,14 +79,12 @@ typedef struct joint_point_tag
 
 typedef struct point_desc_block
 {
-    int type;
+    char type;
     int index;
     union
     {
         struct point_block_peer
         {
-            int type;
-            int index;
             int state; 
             int dest;
             int addr;
@@ -100,9 +98,11 @@ typedef struct point_desc_block
 
         struct bridge_master
         {
-            unsigned long peer_wireway_name_id;
+            char dest;
+            int location_peer_index;
             int peer_point_index;
-        }bmaser;
+            unsigned long peer_wireway_name_id;
+        }bmaster;
 
         struct bridge_slave
         {
