@@ -17,6 +17,7 @@
 #define wire_init 1
 #define wire_attaching 2
 #define wire_active 3
+#define wire_restoring 4
 
 /* point state define*/
 
@@ -49,9 +50,10 @@ typedef struct point_tag
 
 typedef struct bridge_slave_point_tag
 {
-    struct list_head bridge;
+    struct list_head list;
     struct wireway_tag *wire;
     char type;
+    int point_index;
     int index;
 }bridge_slave;
 
@@ -106,8 +108,8 @@ typedef struct point_desc_block
 
         struct bridge_slave
         {
-            unsigned long peer_wireway_name_id;
-            int br_index;
+            unsigned long master_wireway_name_id;
+            int point_index;
         }bslave;
     }node_desc;
 

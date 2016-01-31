@@ -103,14 +103,14 @@ int bridge_wireway(char *srcname,point *p)
     b->wire = dstw;
     p->type = point_bridge_peer;
 
-    set_list_type(&b->bridge_slave.bridge,point_bridge_slave);
+    set_list_type(&b->bridge_slave.list,point_bridge_slave);
     b->bridge_slave.type = point_bridge_slave;
     b->bridge_slave.wire = srcw;
     if(srcw->peer[0] == p)
     {
-        list_add(&b->bridge_slave.bridge,&srcw->point_list);
+        list_add(&b->bridge_slave.list,&srcw->point_list);
     }else if(srcw->peer[1] == p) {
-        list_add(&b->bridge_slave.bridge,&p->list);
+        list_add(&b->bridge_slave.list,&p->list);
     }else {
         printf("error in bridge\r\n");
         return 1;

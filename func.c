@@ -151,8 +151,9 @@ wireway *load_wireway_node(unsigned long wireway_id)
         {
             w->name = read_data(block->name_id);
             w->block = block;
-            w->state = block->state;
+            w->state = wire_restoring;
             w->point_num = block->point_num;
+            
             INIT_LIST_HEAD(&w->point_list);
             list = &w->point_list;            
             for(i = 0; i < block->point_num ; i++)
@@ -211,6 +212,15 @@ wireway *load_wireway_node(unsigned long wireway_id)
                         list = &b->list;
                         break;
 
+                    }
+                    
+                    case point_bridge_slave:
+                    {
+
+
+
+
+                        break;
                     }
                     
                     default : printf("error in line %d\r\n",__LINE__); break;
@@ -300,6 +310,7 @@ int save_wireway(wireway *srcw)
         switch(pos->node_type)
         {
             case point_peer:
+            case point_bridge_peer:
             {
                 point *p = list_entry(pos,point,list);
                 desc->type  = p->type;
@@ -318,14 +329,15 @@ int save_wireway(wireway *srcw)
                 desc->node_desc.bmaster.dest = b->dest;
                 break;
             }
-            case point_bridge_peer:
-                printf("case point_bridge_peer \r\n");
-                break;
-
             case point_bridge_slave:
-                printf("case point_bridge_slave \r\n");
+            { 
+                bridge_slave *slave = list_entry(pos,bridge_slave,list);
+                bridge_point *b = list_entry(slave,bridge_point,bridge_slave);
+                desc->type =  slave->type;
+                desc->node_desc.bslave.master_wireway_name_id = b->wire->block->name_id;
+                desc->node_desc.bslave.point_index = slave->point_index;
                 break;
-            
+            }
             case point_joint:
                 printf("case point_joint \r\n");
                 break;
@@ -421,11 +433,11 @@ bridge_point *get_relate_bridge(point *p)
     
     if(p == p->wire->peer[0])
     {
-        slave = list_entry(p->list.prev,bridge_slave,bridge);
+        slave = list_entry(p->list.prev,bridge_slave,list);
     }
     else if(p == p->wire->peer[1])
     {
-        slave = list_entry(p->list.next,bridge_slave,bridge);
+        slave = list_entry(p->list.next,bridge_slave,list);
     }
     else
     {
@@ -551,12 +563,19 @@ void update_wireway_fib(point *p,wireway *srcw)
     }
 }
 
-
-
-
-
-
-
+#if 0
+void insert_restore_wireway_tree(wireway *w)
+{
+    if(NULL == wirewayRestoreTree)
+    {
+        wirewayRestoreTree = make_new_tree(w->name,w);
+    }
+    else
+    {
+        wirewayRestoreTree = insert(wirewayRestoreTree,w->name,w);
+    }
+}
+#endif
 
 void insert_wireway_tree(wireway *w)
 {
@@ -725,7 +744,7 @@ void assign_point_index(wireway *w)
             }
             case point_bridge_slave:
             {
-                bridge_slave *slave = list_entry(pos,bridge_slave,bridge);
+                bridge_slave *slave = list_entry(pos,bridge_slave,list);
                 slave->index = index;
                 break;
             }
@@ -854,7 +873,7 @@ void print_wireway_detail(wireway *w)
                 break;
             }
             case point_bridge_slave:
-            {    bridge_slave *slave = list_entry(pos,bridge_slave,bridge);
+            {    bridge_slave *slave = list_entry(pos,bridge_slave,list);
                 print_bridge_slave(slave);
                // printf("bridge point slave !!\r\n");
                 break;
