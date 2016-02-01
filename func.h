@@ -11,3 +11,6 @@ void assgin_bridge_location(bridge_point *b);
 int is_wireway_exist(char *name);
 wireway *alloc_wireway_inst();
 void wireway_tree_restore();
+wireway *find_wireway_restore_list(char *name);
+wireway *get_wireway_in_mem(char *name);
+

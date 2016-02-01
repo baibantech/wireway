@@ -64,7 +64,7 @@ typedef struct bridge_point_tag
     struct wireway_tag *wire;
     struct bridge_slave_point_tag bridge_slave;
     int location_peer_index;
-    int point_peer_index;
+    int slave_point_index;
     int index;
     char dest;
     char type;    
@@ -102,13 +102,14 @@ typedef struct point_desc_block
         {
             char dest;
             int location_peer_index;
-            int peer_point_index;
+            int slave_point_index;
             unsigned long peer_wireway_name_id;
         }bmaster;
 
         struct bridge_slave
         {
             unsigned long master_wireway_name_id;
+            int bridge_index;
             int point_index;
         }bslave;
     }node_desc;

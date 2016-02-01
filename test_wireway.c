@@ -98,7 +98,6 @@ int bridge_wireway(char *srcname,point *p)
         return 1;
     }
     b->location_peer_index = -1;
-    b->point_peer_index = p->index;
     b->dest = p->dest;
     b->wire = dstw;
     p->type = point_bridge_peer;
@@ -125,7 +124,7 @@ int bridge_wireway(char *srcname,point *p)
 
         insert_bridge_point(b,dstw);
         assign_point_index(dstw);
-    
+        b->slave_point_index = b->bridge_slave.index; 
         if(p->state == point_idle)
         {
             assgin_bridge_location(b);

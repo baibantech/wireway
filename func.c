@@ -9,6 +9,30 @@ void list_wireway_tree(node *nd);
 wireway_fib* Alloc_fib();
 
 node *wirewayTree = NULL;
+wireway *wirewayRestoreList = NULL;
+
+void insert_wireway_restore_list(wireway *w)
+{
+    if(wirewayRestoreList)
+    {
+        w->next = wirewayRestoreList;
+    }
+    wirewayRestoreList = w;
+}
+wireway *find_wireway_restore_list(char *name)
+{
+    wireway *w = wirewayRestoreList;
+    while(w)
+    {
+        if(0 == strcmp(w->name,name))
+        {
+            return w;
+        }
+        w = w->next;
+    }
+
+    return NULL;
+}
 
 int GetStringHash(char *name)
 {
@@ -35,9 +59,17 @@ int wireway_tree_empty()
     return 1;
 
 }
-int is_wireway_in_mem(char *name)
+wireway *get_wireway_in_mem(char *name)
 {
-    return is_data_in_mem(wirewayTree,name);
+    wireway *w = find_wireway_restore_list(name);
+    if(NULL == w)
+    {
+        if(is_data_in_mem(wirewayTree,name))
+        {
+            return lookup_wireway(name);
+        }
+    }
+    return w;
 }
 
 point *get_peer_by_index(wireway *srcw,int index)
@@ -60,6 +92,52 @@ point *get_peer_by_index(wireway *srcw,int index)
         }
     }
 
+    return NULL;
+}
+bridge_point *get_bridge_point_by_index(wireway *srcw,int index)
+{
+
+    struct list_head *pos;
+    int i = 0;
+    list_for_each(pos,&srcw->point_list)
+    {
+        if(i++ == index)
+        {
+            if(pos->node_type != point_bridge)
+            {
+                return NULL;
+            }   
+            else
+            {
+                bridge_point *b = list_entry(pos,bridge_point,list);
+                return b;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+bridge_slave *get_bridge_slave_by_index(wireway *srcw,int index)
+{
+
+    struct list_head *pos;
+    int i = 0;
+    list_for_each(pos,&srcw->point_list)
+    {
+        if(i++ == index)
+        {
+            if(pos->node_type != point_bridge_slave)
+            {
+                return NULL;
+            }   
+            else
+            {
+                bridge_slave *slave = list_entry(pos,bridge_slave,list);
+                return slave;
+            }
+        }
+    }
     return NULL;
 }
 
@@ -153,7 +231,7 @@ wireway *load_wireway_node(unsigned long wireway_id)
             w->block = block;
             w->state = wire_restoring;
             w->point_num = block->point_num;
-            
+            insert_wireway_restore_list(w);            
             INIT_LIST_HEAD(&w->point_list);
             list = &w->point_list;            
             for(i = 0; i < block->point_num ; i++)
@@ -193,31 +271,56 @@ wireway *load_wireway_node(unsigned long wireway_id)
                     {
                         unsigned long dst_wireway_name_id = pblock->node_desc.bmaster.peer_wireway_name_id;
                         char *peer_name = read_data(dst_wireway_name_id);
+                        wireway *peer_wire = NULL;
                         bridge_point *b = NULL;
-                        if(is_wireway_in_mem(peer_name)){
-
-
+                        int need_load_peer_wire = 0;
+                        int slave_point_index = pblock->node_desc.bmaster.slave_point_index;
+                        if(peer_wire = get_wireway_in_mem(peer_name)){
+                               bridge_slave *slave = get_bridge_slave_by_index(peer_wire,slave_point_index);
+                               b = list_entry(slave,bridge_point,bridge_slave);
                         }else {
-
-                            b = malloc(sizeof(bridge_point));
-                            b->type = pblock->type;
-                            b->index = pblock->index;
-                            b->dest = pblock->node_desc.bmaster.dest;
-                            b->location_peer_index = pblock->node_desc.bmaster.location_peer_index;
-                            b->point_peer_index = pblock->node_desc.bmaster.peer_point_index;
-                            b->wire = w;                            
+                               b = malloc(sizeof(bridge_point));
+                               need_load_peer_wire = 1;
                         }
+                        b->type = pblock->type;
+                        b->index = pblock->index;
+                        b->dest = pblock->node_desc.bmaster.dest;
+                        b->location_peer_index = pblock->node_desc.bmaster.location_peer_index;
+                        b->slave_point_index = pblock->node_desc.bmaster.slave_point_index;
+                        b->wire = w;                            
                         set_list_type(&b->list,point_bridge);                           
                         list_add(&b->list,list);
                         list = &b->list;
+                        if(need_load_peer_wire)
+                        lookup_wireway(peer_name);
                         break;
 
                     }
                     
                     case point_bridge_slave:
                     {
-
-
+                        unsigned long dst_wireway_name_id = pblock->node_desc.bslave.master_wireway_name_id;
+                        char *master_name = read_data(dst_wireway_name_id);
+                        int bridge_index = pblock->node_desc.bslave.bridge_index;
+                        wireway *master_wire = NULL;
+                        bridge_point *b= NULL;
+                        if(master_wire = get_wireway_in_mem(master_name))
+                        {
+                            b = get_bridge_point_by_index(master_wire,bridge_index);
+                        }
+                        else
+                        {
+                            b = malloc(sizeof(bridge_point));
+                        }
+                        if(b)
+                        {
+                            set_list_type(&b->bridge_slave.list,point_bridge_slave);
+                            list_add(&b->bridge_slave.list,list);
+                            b->bridge_slave.type = pblock->type;
+                            b->bridge_slave.index = pblock->index;
+                            b->bridge_slave.point_index = pblock->node_desc.bslave.point_index;
+                            b->bridge_slave.wire = w;
+                        }
 
 
                         break;
@@ -325,7 +428,7 @@ int save_wireway(wireway *srcw)
                 desc->type  =  b->type;
                 desc->node_desc.bmaster.location_peer_index = b->location_peer_index;
                 desc->node_desc.bmaster.peer_wireway_name_id = b->bridge_slave.wire->block->name_id;
-                desc->node_desc.bmaster.peer_point_index = b->point_peer_index;
+                desc->node_desc.bmaster.slave_point_index = b->slave_point_index;
                 desc->node_desc.bmaster.dest = b->dest;
                 break;
             }
@@ -336,6 +439,7 @@ int save_wireway(wireway *srcw)
                 desc->type =  slave->type;
                 desc->node_desc.bslave.master_wireway_name_id = b->wire->block->name_id;
                 desc->node_desc.bslave.point_index = slave->point_index;
+                desc->node_desc.bslave.bridge_index = b->index;
                 break;
             }
             case point_joint:
@@ -343,7 +447,7 @@ int save_wireway(wireway *srcw)
                 break;
                 
             default:
-                printf("default \r\n");
+                printf("default %d \r\n",pos->node_type);
                 break;
 
         }
@@ -532,7 +636,7 @@ void update_wireway_fib(point *p,wireway *srcw)
                 {
                     if(b->bridge_slave.wire != p->wire)
                     {
-                        tmp = get_peer_by_index(b->bridge_slave.wire,b->point_peer_index);     
+                        tmp = get_peer_by_index(b->bridge_slave.wire,b->bridge_slave.point_index);     
                         if((p->dest & point_in)&&(tmp->dest & point_out)) 
                         {
                             fib = Alloc_fib();
@@ -706,13 +810,13 @@ void assgin_bridge_location(bridge_point *b)
 
     if(peer1_prio >= peer0_prio)
     {
-        point * p = get_peer_by_index(b->bridge_slave.wire,b->point_peer_index);  
+        point * p = get_peer_by_index(b->bridge_slave.wire,b->bridge_slave.point_index);  
         p->addr = peer1->addr;
         b->location_peer_index = peer1->index;
     }
     else
     {
-        point * p = get_peer_by_index(b->bridge_slave.wire,b->point_peer_index);
+        point * p = get_peer_by_index(b->bridge_slave.wire,b->bridge_slave.point_index);
         p->addr = peer0->addr;
         b->location_peer_index = peer0->index;
     }    
@@ -795,7 +899,7 @@ void print_bridge_point(bridge_point *b)
     printf("point index :%d\r\n",b->index);
     print_point_type(b->type);
     printf("bridge peer wireway name is %s \r\n",dstw->name);
-    printf("bridge peer point index is %d\r\n",b->point_peer_index);
+    printf("bridge slave point index is %d\r\n",b->slave_point_index);
     
     if(b->location_peer_index != -1)
     {
