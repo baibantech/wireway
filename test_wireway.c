@@ -116,6 +116,7 @@ int bridge_wireway(char *srcname,point *p)
     }
    
     assign_point_index(srcw);
+    b->bridge_slave.point_index = p->index;
 
     set_list_type(&b->list,point_bridge);
     b->type = point_bridge;
