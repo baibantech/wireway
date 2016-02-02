@@ -175,16 +175,17 @@ void test_wireway()
 
     point *p;
     wireway *w;
-    create_wireway("/chn/name1");
-    w =  create_wireway("/chn/name2");
+    create_wireway("/chn/name2");
+    w =  create_wireway("/chn/name1");
     attach_wireway("/chn/name1",0x1234);
     //attach_wireway("/chn/name1",0xbcbcbcbc);
     attach_wireway("/chn/name1",0x5678);    
 
 
     attach_wireway("/chn/name2",0x9012);
-    p = get_unused_peer(w);
-    bridge_wireway("/chn/name1",p);
+    attach_wireway("/chn/name2",0x3456);
+    p = get_peer_by_index(w,1);
+    bridge_wireway("/chn/name2",p);
     print_wireway();
 }
 

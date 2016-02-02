@@ -488,7 +488,7 @@ void insert_into_leaf(node *leaf, int index, char *key, void *data)
         leaf->pointers[i] = leaf->pointers[i-1];
 
         leaf->block->keys_id[i] = leaf->block->keys_id[i-1];
-        leaf->block->pointers_id[i] = leaf->block->keys_id[i-1];
+        leaf->block->pointers_id[i] = leaf->block->pointers_id[i-1];
         
     }
     leaf->keys[index] = malloc(MAX_KEY_LEN);

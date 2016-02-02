@@ -7,6 +7,7 @@
 #include "save_func.h"
 void list_wireway_tree(node *nd);
 wireway_fib* Alloc_fib();
+wireway *load_wireway_node_no_fib();
 
 node *wirewayTree = NULL;
 wireway *wirewayRestoreList = NULL;
@@ -141,7 +142,7 @@ bridge_slave *get_bridge_slave_by_index(wireway *srcw,int index)
     return NULL;
 }
 
-restore_fib_by_point(point *p)
+restore_fib_by_point(point *p,wireway *dstw)
 {
     struct list_head *pos;
     int index = p->index;
@@ -150,16 +151,20 @@ restore_fib_by_point(point *p)
     wireway *srcw= p->wire;
     wireway_fib *fib;
 
-    list_for_each(pos,&srcw->point_list)
+    list_for_each(pos,&dstw->point_list)
     {
-        if(i <= index)
+        if(srcw == dstw)
         {
-            i++;
-            continue;
+            if(i <= index)
+            {
+                i++;
+                continue;
+            }
         }    
         switch(pos->node_type)
         {
             case point_peer:
+            case point_bridge_peer:
             { 
                 tmp = list_entry(pos,point,list);
                 if((p->dest & point_in)&&(tmp->dest & point_out)) 
@@ -175,9 +180,12 @@ restore_fib_by_point(point *p)
                     fib->src = p->addr;
                     list_add(&fib->list,&p->fib);
                 }
-                
                 break;
             }
+            case point_bridge:
+            case point_bridge_slave:
+            case point_joint:
+            break;
             
             default: printf("case default \r\n");
 
@@ -187,7 +195,7 @@ restore_fib_by_point(point *p)
 
 }
 
-int restore_wireway_fib(wireway *srcw)
+int restore_wireway_fib(wireway *fromw,wireway *tow)
 {
     struct list_head *pos;
     int index = 0;
@@ -195,19 +203,56 @@ int restore_wireway_fib(wireway *srcw)
     wireway_fib *fib;
     bridge_point *b;
 
-    list_for_each(pos,&srcw->point_list)
+    list_for_each(pos,&tow->point_list)
     {        
         switch(pos->node_type)
         {
             case point_peer:
+            case point_bridge_peer:
             {                
                 tmp = (point*)list_entry(pos,point,list);
-                restore_fib_by_point(tmp);
+                restore_fib_by_point(tmp,tow);
+                break;
+            }
+            case point_bridge:
+            {
+                b = list_entry(pos,bridge_point,list);
+                if(b->bridge_slave.wire == fromw)
+                {
+                    break;
+                }
+                if(-1 == b->location_peer_index)
+                {
+                    point *peer_point = get_peer_by_index(b->bridge_slave.wire,b->bridge_slave.point_index);
+                    restore_fib_by_point(peer_point,tow);
+                }
+                restore_wireway_fib(tow,b->bridge_slave.wire);               
+
+                break;
+            }
+            
+            case point_bridge_slave:
+            {
+                bridge_slave *slave = list_entry(pos,bridge_slave,list);
+                b = list_entry(slave,bridge_point,bridge_slave);
+                if(b->wire == fromw)
+                {
+                    break;
+                }
+                point *p = get_peer_by_index(tow,slave->point_index);
+                restore_fib_by_point(p,b->wire);
+                restore_wireway_fib(tow,b->wire);
+                break;
+            }
+
+            case point_joint:
+            {
+                
                 break;
             }
 
 
-            default: printf("case default \r\n");break;
+            default: printf("in line %d,case default \r\n",__LINE__);break;
 
         }
     }
@@ -215,10 +260,35 @@ int restore_wireway_fib(wireway *srcw)
     return 0;
 }
 
-wireway *load_wireway_node(unsigned long wireway_id)
+wireway *restore_relate_wireway_node(char *name)
+{
+    node *leaf;
+    int i;
+    leaf = find_leaf(wirewayTree,name);
+    if(leaf == NULL)
+    {
+        return NULL;
+    }
+    
+    for(i = 0; i <leaf->num_keys && strcmp(leaf->keys[i],name) != 0;i++);
+    
+    if(i == leaf->num_keys)
+    return NULL;
+
+    if(NULL == leaf->pointers[i])
+    {
+        leaf->pointers[i] = load_wireway_node_no_fib(leaf->block->pointers_id[i]);
+    }
+    return NULL;
+}
+
+/* this function called by bptree find ,or print tree,but this function may loadanother wireway ,the relate wire be loaded by another func,the return wireway be assigned to bptree,but the relate wire must insert to the bptree*/
+
+wireway *load_wireway_node_no_fib(unsigned long wireway_id)
 {
     int i ,j;
     int peer_num = 0;
+    int need_load_relate_wireway = 0;
     point *p = NULL;
     struct list_head *list = NULL; 
     wireway_block *block = (wireway_block*)read_data(wireway_id);
@@ -273,14 +343,13 @@ wireway *load_wireway_node(unsigned long wireway_id)
                         char *peer_name = read_data(dst_wireway_name_id);
                         wireway *peer_wire = NULL;
                         bridge_point *b = NULL;
-                        int need_load_peer_wire = 0;
                         int slave_point_index = pblock->node_desc.bmaster.slave_point_index;
                         if(peer_wire = get_wireway_in_mem(peer_name)){
                                bridge_slave *slave = get_bridge_slave_by_index(peer_wire,slave_point_index);
                                b = list_entry(slave,bridge_point,bridge_slave);
                         }else {
                                b = malloc(sizeof(bridge_point));
-                               need_load_peer_wire = 1;
+                               need_load_relate_wireway = 1;
                         }
                         b->type = pblock->type;
                         b->index = pblock->index;
@@ -291,8 +360,8 @@ wireway *load_wireway_node(unsigned long wireway_id)
                         set_list_type(&b->list,point_bridge);                           
                         list_add(&b->list,list);
                         list = &b->list;
-                        if(need_load_peer_wire)
-                        lookup_wireway(peer_name);
+                        if(need_load_relate_wireway)
+                        restore_relate_wireway_node(peer_name);
                         break;
 
                     }
@@ -311,6 +380,7 @@ wireway *load_wireway_node(unsigned long wireway_id)
                         else
                         {
                             b = malloc(sizeof(bridge_point));
+                            need_load_relate_wireway = 1;
                         }
                         if(b)
                         {
@@ -320,18 +390,20 @@ wireway *load_wireway_node(unsigned long wireway_id)
                             b->bridge_slave.index = pblock->index;
                             b->bridge_slave.point_index = pblock->node_desc.bslave.point_index;
                             b->bridge_slave.wire = w;
+                            list = &b->bridge_slave.list;
+                            if(need_load_relate_wireway)
+                            {
+                                restore_relate_wireway_node(master_name);
+                            }
                         }
 
 
                         break;
                     }
                     
-                    default : printf("error in line %d\r\n",__LINE__); break;
+                    default : printf("error in line %d,error type %d\r\n",__LINE__,pblock->type); break;
                 }    
             }
-
-            restore_wireway_fib(w);
-            
             return w;            
         }     
 
@@ -339,7 +411,16 @@ wireway *load_wireway_node(unsigned long wireway_id)
     return NULL;
 }
 
-
+wireway *load_wireway_node(unsigned long wireway_id)
+{
+    wireway *w = load_wireway_node_no_fib(wireway_id);
+    if(w)
+    {
+        restore_wireway_fib(w,w);
+        return w;
+    }
+    return NULL;
+}
 wireway *alloc_wireway_inst()
 {
     wireway_block *block;
@@ -669,6 +750,7 @@ void update_wireway_fib(point *p,wireway *srcw)
 
 #if 0
 void insert_restore_wireway_tree(wireway *w)
+                               need_load_relate_wireway = 1;
 {
     if(NULL == wirewayRestoreTree)
     {
