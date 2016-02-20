@@ -1,7 +1,7 @@
 #ifndef __storage_sys__
 #define __storage_sys__
 #include <stdio.h>
-
+#include "list.h"
 enum zone_type
 {
     zone_block_type,
@@ -70,5 +70,13 @@ typedef struct storage_buddy_head_tag
     int sys_num;
     storage_buddy_sys *sys_list;
 }storage_buddy_head;
+
+typedef struct file_handle_item
+{
+    
+
+
+}file_handle_item;
+
 
 #endif
