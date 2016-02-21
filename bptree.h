@@ -1,3 +1,5 @@
+#ifndef __bptree__
+#define __bptree__
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -69,3 +71,4 @@ int get_node_index(node *nd);
 node *coalesce_nodes(node *root, node *nd, node *neighbor, int nd_index);
 void distribute_nodes(node *nd, node *neighbor, int nd_index);
 node *restore_bptree_root();
+#endif

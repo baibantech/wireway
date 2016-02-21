@@ -7,7 +7,6 @@
 wireway* create_wireway(char *name);
 int attach_wireway(char *name , int addr);
 int bridge_wireway(char *srcname,point *p);
-void disk_storage_init();
 
 wireway* create_wireway(char *name)
 {
@@ -266,7 +265,7 @@ void test_wireway2()
 
 int main(void)
 {
-    disk_storage_init();
+    storage_sys_init();
     wireway_tree_restore();
     if(wireway_tree_empty())
     {

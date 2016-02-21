@@ -15,8 +15,7 @@ int storage_zone_wireway_id = -1;
 storage_zone_head *zone_head = NULL;
 storage_buddy_head *buddy_head = NULL;
 int global_zone_id = 0;
-
-unsigned long alloc_zone_block(storage_zone *zone,unsigned long idx);
+int open_media_file_count = 0;
 
 void free_storage_zone(storage_zone *zone)
 {
@@ -130,33 +129,32 @@ storage_zone *alloc_storage_zone(char *zone_name,int zone_type,int block_size,in
         zone_tmp->block_size = block_size;
         zone_tmp->media_count = 1;
         zone_tmp->block_count = per_media_count;
-        zone_tmp->used_count = 0;
+        zone_tmp->root_id = -1;
         if(zone_type == zone_block_type)
         {
-            len = sizeof(storage_media)+(zone->block_count/sizeof(long) +1)*sizeof(long);
+            len = sizeof(storage_media)+(zone_tmp->block_count/sizeof(long) +1)*sizeof(long);
             media = malloc(len);
             if(media)
             {
                 memset(media,0,len);
                 media->file_index = 0;
                 media->file.block_file.block_free_count = per_media_count;
-                media->file.root_id = -1;
                 f = fopen(zone_name,"w+");
                 if(f)
                 {
                     int fd = fileno(f);
                     posix_fallocate(fd,0,len);
-                    fwrite(zone,sizeof(storage_zone),1,f);
+                    fwrite(zone_tmp,sizeof(storage_zone),1,f);
                     fseek(f,sizeof(storage_zone),SEEK_SET);
                     fwrite(media,len,1,f);
-                    if(opened_media_file_count < MAX_OPEN_MEDIA_FILE)
+                    if(open_media_file_count < MAX_OPEN_MEDIA_FILE)
                     {
-                        media->file.block_file.file_handle = f;
+                        media->file_handle = f;
                         open_media_file_count++;
                     }
                     else
                     {
-                        media->file.block_file.file_handle = NULL;
+                        media->file_handle = NULL;
                         fclose(f);
                     }
                 }
@@ -176,6 +174,12 @@ storage_zone *alloc_storage_zone(char *zone_name,int zone_type,int block_size,in
         zone_tmp->zone_id = alloc_zone_id();
         return zone_tmp;
     }
+    free_zone:
+    if(zone_tmp)
+    {
+        free_storage_zone(zone_tmp);
+    }    
+
     return NULL;
 }
 
@@ -201,12 +205,12 @@ int reg_storage_zone(char *zone_name,int zone_type,int block_size,int per_media_
     {
         zone_head = malloc(sizeof(storage_zone_head));
         if(NULL == zone_head) return -1;
-        memset(zone_head,0,sizeof(storage_zone_head);
+        memset(zone_head,0,sizeof(storage_zone_head));
     }
     zone_pre = zone_tmp = zone_head->zone_list;
     while(zone_tmp)
     {
-        if(0 = strcmp(zone_tmp->zone_name,zone_name))
+        if(0 == strcmp(zone_tmp->zone_name,zone_name))
         {
             return -1;
         }
@@ -329,7 +333,6 @@ FILE *find_file_stream(storage_zone *zone,int file_index)
         {
             return media->file_handle;
         }
-    
     }
     return NULL;
 }
@@ -357,7 +360,7 @@ void save_data(unsigned long  storage_id,void* data,int len)
                     }
                     offset = offset + media_len;
                     fseek(stream,offset,SEEK_SET);
-                    fwrite(data,len,1,file_stream);
+                    fwrite(data,len,1,stream);
                 } 
                 break;   
             }
@@ -370,7 +373,7 @@ void save_data(unsigned long  storage_id,void* data,int len)
     return ;
 }
 
-void read_data(unsigned long  storage_id)
+void *read_data(unsigned long  storage_id)
 {
     int zone_id  = storage_id >>(BITS_PER_LONG-BITS_PER_BYTE);
     storage_zone *zone = get_zone(zone_id);
@@ -395,8 +398,8 @@ void read_data(unsigned long  storage_id)
                     offset = offset + media_len;
                     data = malloc(zone->block_size);
                     if(data) {
-                        fseek(file_stream,offset,SEEK_SET);
-                        fread(data,zone->block_size,1,file_stream);
+                        fseek(stream,offset,SEEK_SET);
+                        fread(data,zone->block_size,1,stream);
                         return data;
                     }
                 } 
@@ -436,31 +439,50 @@ unsigned long  alloc_bptree_block()
 
 unsigned long alloc_wireway_block()
 {
-
     return alloc_block_from_zone(storage_zone_wireway_id);
 }
 
-void save_bptree_node(node_block *block,int is_root)
+void save_bptree_node(node_block *block)
 {
-    unsigned long node_id = block->node_id; 
-    file_head *head = zone_list[bptree_type].head;
-    unsigned long offset = zone_list[bptree_type].size*node_id+sizeof(file_head);
-    FILE *file_stream = zone_list[bptree_type].file;
-    fseek(file_stream,offset,SEEK_SET);
-    fwrite(block,sizeof(node_block),1,file_stream);
-    if(is_root)
+    unsigned long node_id = block->node_id;
+    save_data(node_id,block,sizeof(node_block));
+}
+void save_bptree_root_node(node_block *block)
+{
+    save_bptree_node(block);
+    set_bptree_root_id(block->node_id);
+}
+void set_bptree_root_id(unsigned long root_id)
+{
+    storage_zone *zone = get_zone(storage_zone_bptree_id);
+    storage_media *media = NULL;
+    FILE *stream = NULL;
+    if(zone)
     {
-       head->root_id = node_id;
-       fseek(file_stream,0,SEEK_SET);
-       fwrite(head,sizeof(file_head),1,file_stream);
+        zone->root_id = root_id;
+        media = zone->media_list;
+        if(media->file_index != 0)
+        {
+            printf("error\r\n");
+        }
+        else
+        {
+            stream = media->file_handle;
+            fseek(stream,0,SEEK_SET);
+            fwrite(zone,sizeof(storage_zone),1,stream);        
+        }
+        
     }
-    return ;
 }
 
 unsigned long get_bptree_rootid()
 {
-    file_head *head = zone_list[bptree_type].head;
-    return head->root_id;
+    storage_zone *zone = get_zone(storage_zone_bptree_id);
+    if(zone)
+    {
+        return zone->root_id;
+    }
+    return -1;
 }
 unsigned long get_bptree_dataid(void *data)
 {
@@ -472,17 +494,11 @@ unsigned long get_bptree_keyid(void *data)
     wireway *w = (wireway*)data;
     return w->block->name_id;
 }
+
 void save_wireway_block(wireway_block *block)
 {
-    unsigned long id = block->wireway_id;
-    
-    unsigned long  index = (id & zone_index_mask)>>(BITS_PER_LONG-BITS_PER_BYTE);    
-    file_head *head = zone_list[index].head;
-    unsigned long offset = zone_list[index].size*((id<<BITS_PER_BYTE)>>(BITS_PER_BYTE))+sizeof(file_head);
-    FILE *file_stream = zone_list[index].file;
-    fseek(file_stream,offset,SEEK_SET);
-    fwrite(block,sizeof(wireway_block),1,file_stream);
-
+    unsigned long storage_id = block->wireway_id;
+    save_data(storage_id,block,sizeof(wireway_block));
 }
 
 void free_key_block(unsigned long id)
@@ -494,15 +510,12 @@ void free_data_block(unsigned long id)
     return;
 }
 
-int storage_zone_bptree_id = -1;
-int storage_zone_key_id = -1;
-int storage_zone_wireway_id = -1;
 
 int storage_sys_init()
 {
-    storage_zone_bptree_id = reg_storage_zone();
-    storage_zone_key_id    = reg_storage_zone();
-    storage_zone_wireway_id = reg_storage_zone();
+    storage_zone_bptree_id = reg_storage_zone("bptree_node",zone_block_type,sizeof(node_block)+1,1000);
+    storage_zone_key_id    = reg_storage_zone("name_cache",zone_block_type,64,1000);
+    storage_zone_wireway_id = reg_storage_zone("wireway_struct",zone_block_type,sizeof(wireway_block),1000);
 
     if(storage_zone_bptree_id == -1 || storage_zone_key_id == -1 || storage_zone_wireway_id == -1)
     {
@@ -510,6 +523,3 @@ int storage_sys_init()
     }
     return 0;
 }
-
-
-
