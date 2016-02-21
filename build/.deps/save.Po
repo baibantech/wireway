@@ -36,7 +36,8 @@ save.o: ../save.c /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/stat.h \
  /usr/include/x86_64-linux-gnu/bits/fcntl2.h ../bptree.h \
  /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdbool.h ../bitmap.h \
- ../bitops.h /usr/include/assert.h ../wireway.h ../list.h
+ ../bitops.h /usr/include/assert.h ../wireway.h ../list.h \
+ ../storage_sys.h
 
 /usr/include/stdc-predef.h:
 
@@ -147,3 +148,5 @@ save.o: ../save.c /usr/include/stdc-predef.h /usr/include/stdio.h \
 ../wireway.h:
 
 ../list.h:
+
+../storage_sys.h:

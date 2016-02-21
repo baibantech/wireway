@@ -96,7 +96,7 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_wireway_OBJECTS = test_wireway.$(OBJEXT) func.$(OBJEXT) \
-	bptree.$(OBJEXT) save.$(OBJEXT) bitmap.$(OBJEXT) \
+	bptree.$(OBJEXT) storage_sys.$(OBJEXT) bitmap.$(OBJEXT) \
 	bitops.$(OBJEXT)
 wireway_OBJECTS = $(am_wireway_OBJECTS)
 wireway_LDADD = $(LDADD)
@@ -174,12 +174,12 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/lixiao1/wireway/missing aclocal-1.14
+ACLOCAL = ${SHELL} /home/lixiao1/Wireway-test/missing aclocal-1.14
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} /home/lixiao1/wireway/missing autoconf
-AUTOHEADER = ${SHELL} /home/lixiao1/wireway/missing autoheader
-AUTOMAKE = ${SHELL} /home/lixiao1/wireway/missing automake-1.14
+AUTOCONF = ${SHELL} /home/lixiao1/Wireway-test/missing autoconf
+AUTOHEADER = ${SHELL} /home/lixiao1/Wireway-test/missing autoheader
+AUTOMAKE = ${SHELL} /home/lixiao1/Wireway-test/missing automake-1.14
 AWK = mawk
 CC = gcc -std=gnu99
 CCDEPMODE = depmode=gcc3
@@ -204,7 +204,7 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/lixiao1/wireway/missing makeinfo
+MAKEINFO = ${SHELL} /home/lixiao1/Wireway-test/missing makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = wireway
@@ -219,10 +219,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = 
 VERSION = 0.0.1
-abs_builddir = /home/lixiao1/wireway/build
-abs_srcdir = /home/lixiao1/wireway/build/..
-abs_top_builddir = /home/lixiao1/wireway/build
-abs_top_srcdir = /home/lixiao1/wireway/build/..
+abs_builddir = /home/lixiao1/Wireway-test/build
+abs_srcdir = /home/lixiao1/Wireway-test/build/..
+abs_top_builddir = /home/lixiao1/Wireway-test/build
+abs_top_srcdir = /home/lixiao1/Wireway-test/build/..
 ac_ct_CC = gcc
 am__include = include
 am__leading_dot = .
@@ -241,7 +241,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/lixiao1/wireway/install-sh
+install_sh = ${SHELL} /home/lixiao1/Wireway-test/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -261,7 +261,7 @@ target_alias =
 top_build_prefix = 
 top_builddir = .
 top_srcdir = ..
-wireway_SOURCES = func.h wireway.h test_wireway.c func.c bptree.c save.c btree.h save.h bitmap.c bitops.c
+wireway_SOURCES = func.h wireway.h test_wireway.c func.c bptree.c storage_sys.c btree.h save.h bitmap.c bitops.c
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -373,7 +373,7 @@ include ./$(DEPDIR)/bitmap.Po
 include ./$(DEPDIR)/bitops.Po
 include ./$(DEPDIR)/bptree.Po
 include ./$(DEPDIR)/func.Po
-include ./$(DEPDIR)/save.Po
+include ./$(DEPDIR)/storage_sys.Po
 include ./$(DEPDIR)/test_wireway.Po
 
 .c.o:

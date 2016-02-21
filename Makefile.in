@@ -96,7 +96,7 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_wireway_OBJECTS = test_wireway.$(OBJEXT) func.$(OBJEXT) \
-	bptree.$(OBJEXT) save.$(OBJEXT) bitmap.$(OBJEXT) \
+	bptree.$(OBJEXT) storage_sys.$(OBJEXT) bitmap.$(OBJEXT) \
 	bitops.$(OBJEXT)
 wireway_OBJECTS = $(am_wireway_OBJECTS)
 wireway_LDADD = $(LDADD)
@@ -261,7 +261,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-wireway_SOURCES = func.h wireway.h test_wireway.c func.c bptree.c save.c btree.h save.h bitmap.c bitops.c
+wireway_SOURCES = func.h wireway.h test_wireway.c func.c bptree.c storage_sys.c btree.h save.h bitmap.c bitops.c
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -373,7 +373,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bitops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bptree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/func.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/save.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/storage_sys.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_wireway.Po@am__quote@
 
 .c.o:
