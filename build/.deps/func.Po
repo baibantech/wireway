@@ -32,7 +32,7 @@ func.o: ../func.c /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/string2.h \
  /usr/include/x86_64-linux-gnu/bits/string3.h ../wireway.h ../list.h \
  ../func.h ../bptree.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdbool.h ../save_func.h
+ /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdbool.h ../storage_sys.h
 
 /usr/include/stdc-predef.h:
 
@@ -130,4 +130,4 @@ func.o: ../func.c /usr/include/stdc-predef.h /usr/include/stdio.h \
 
 /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdbool.h:
 
-../save_func.h:
+../storage_sys.h:

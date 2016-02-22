@@ -261,7 +261,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-wireway_SOURCES = func.h wireway.h wireway_core.c func.c bptree.c storage_sys.c btree.h save.h bitmap.c bitops.c
+wireway_SOURCES = func.h wireway.h wireway_core.c func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

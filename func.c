@@ -4,7 +4,7 @@
 #include "wireway.h"
 #include "func.h"
 #include "bptree.h"
-#include "save_func.h"
+#include "storage_sys.h"
 void list_wireway_tree(node *nd);
 wireway_fib* Alloc_fib();
 wireway *load_wireway_node_no_fib();
