@@ -12,7 +12,7 @@ int storage_zone_bptree_id = -1;
 int storage_zone_key_id = -1;
 int storage_zone_wireway_id = -1;
 
-storage_zone_head *zone_head = NULL;
+storage_zone_head *global_zone_head = NULL;
 storage_buddy_head *buddy_head = NULL;
 int global_zone_id = 0;
 int open_media_file_count = 0;
@@ -144,6 +144,7 @@ storage_zone *alloc_storage_zone(char *zone_name,int zone_type,int block_size,in
                 {
                     int fd = fileno(f);
                     posix_fallocate(fd,0,len);
+                    zone_tmp->zone_id = alloc_storage_zone_id();
                     fwrite(zone_tmp,sizeof(storage_zone),1,f);
                     fseek(f,sizeof(storage_zone),SEEK_SET);
                     fwrite(media,len,1,f);
@@ -157,6 +158,7 @@ storage_zone *alloc_storage_zone(char *zone_name,int zone_type,int block_size,in
                         media->file_handle = NULL;
                         fclose(f);
                     }
+                    return zone_tmp;
                 }
             }
             goto free_zone;
@@ -171,22 +173,18 @@ storage_zone *alloc_storage_zone(char *zone_name,int zone_type,int block_size,in
             printf("zone type err\r\n");
             goto free_zone;
         }
-        zone_tmp->zone_id = alloc_zone_id();
-        return zone_tmp;
     }
     free_zone:
     if(zone_tmp)
     {
         free_storage_zone(zone_tmp);
     }    
-
     return NULL;
 }
 
 
 int reg_storage_zone(char *zone_name,int zone_type,int block_size,int per_media_count)
 {
-    storage_zone_head *zone_head ;
     storage_zone *zone_tmp , *zone_pre ;
     int len = 0;
     storage_media *media;
@@ -201,13 +199,13 @@ int reg_storage_zone(char *zone_name,int zone_type,int block_size,int per_media_
         return -1;
     }
 
-    if(NULL == zone_head)
+    if(NULL == global_zone_head)
     {
-        zone_head = malloc(sizeof(storage_zone_head));
-        if(NULL == zone_head) return -1;
-        memset(zone_head,0,sizeof(storage_zone_head));
+        global_zone_head = malloc(sizeof(storage_zone_head));
+        if(NULL == global_zone_head) return -1;
+        memset(global_zone_head,0,sizeof(storage_zone_head));
     }
-    zone_pre = zone_tmp = zone_head->zone_list;
+    zone_pre = zone_tmp = global_zone_head->zone_list;
     while(zone_tmp)
     {
         if(0 == strcmp(zone_tmp->zone_name,zone_name))
@@ -234,17 +232,18 @@ int reg_storage_zone(char *zone_name,int zone_type,int block_size,int per_media_
 
     if(NULL == zone_pre)
     {
-        zone_head->zone_list = zone_tmp;
+        global_zone_head->zone_list = zone_tmp;
     }
     else
     {
         zone_pre->next = zone_tmp;
     }
-    zone_head->zone_num++;
+    global_zone_head->zone_num++;
     return zone_tmp->zone_id;
 
 free_zone_head:
-    free(zone_head);
+    free(global_zone_head);
+    global_zone_head = NULL;
     return -1;
 }
 
@@ -265,17 +264,18 @@ void *alloc_space_from_buddy_sys(int sys_id,int len)
 storage_zone *get_zone(int zone_id)
 {
     storage_zone *zone = NULL;
-    if(NULL == zone_head)
+    if(NULL == global_zone_head)
     {
         return NULL;
     }
-    zone = zone_head->zone_list;
+    zone = global_zone_head->zone_list;
     while(zone)
     {
         if(zone->zone_id == zone_id)
         {
             return zone;
         }
+        zone = zone->next;
     }
     return NULL;
 }
@@ -296,6 +296,7 @@ unsigned long alloc_block_from_zone(int zone_id)
             {
                 case zone_block_type:
                 {
+                    unsigned long zone_id = zone->zone_id;
                     block_index = find_next_zero_bit(media->file.block_file.bitmap,zone->block_count,0);
                     len = sizeof(storage_media)+(zone->block_count/sizeof(long) +1)*sizeof(long);
                     set_bit(block_index,media->file.block_file.bitmap);
@@ -310,7 +311,7 @@ unsigned long alloc_block_from_zone(int zone_id)
                         fseek(file,0,SEEK_SET);
                     }
                     fwrite(media,len,1,file);
-                    return (block_index +media->file_index *zone->block_count)|(zone->zone_id << (BITS_PER_LONG- BITS_PER_BYTE));            
+                    return (block_index +media->file_index *zone->block_count)|(zone_id << (BITS_PER_LONG- BITS_PER_BYTE));            
                 }
                 
                 case zone_free_type:

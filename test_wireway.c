@@ -269,7 +269,7 @@ int main(void)
     wireway_tree_restore();
     if(wireway_tree_empty())
     {
-        test_wireway();
+        test_wireway2();
     }
     else
     {
