@@ -276,7 +276,7 @@ node *make_new_tree(char *key, void *data)
         block->keys_id[0] = key_id;
         block->num_keys = root->num_keys;
         block->is_leaf = root->is_leaf;
-        save_bptree_node(block,1);
+        save_bptree_root_node(block);
     }
     else
     {
@@ -504,7 +504,7 @@ void insert_into_leaf(node *leaf, int index, char *key, void *data)
         leaf->block->pointers_id[index] = data_id;
         leaf->block->keys_id[index] = key_id;
         leaf->block->num_keys = leaf->num_keys;
-        save_bptree_node(leaf->block,0);
+        save_bptree_node(leaf->block);
     }
     else
     {

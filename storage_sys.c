@@ -68,6 +68,7 @@ storage_zone *restore_storage_zone(char *zone_name)/*zone_name file  exist*/
                                 media->file_handle = file;
                                 media->next = NULL;
                                 media_tmp = media;
+                                zone->media_list = media;
                                 zone->cur_media = media;                               
                             } 
                             else{
@@ -158,6 +159,8 @@ storage_zone *alloc_storage_zone(char *zone_name,int zone_type,int block_size,in
                         media->file_handle = NULL;
                         fclose(f);
                     }
+                    zone_tmp->media_list = media;
+                    zone_tmp->cur_media = media;
                     return zone_tmp;
                 }
             }
