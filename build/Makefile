@@ -95,7 +95,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_wireway_OBJECTS = wireway_core.$(OBJEXT) func.$(OBJEXT) \
+am_wireway_OBJECTS = wireway_core.$(OBJEXT) wireway_func.$(OBJEXT) \
 	bptree.$(OBJEXT) storage_sys.$(OBJEXT) bitmap.$(OBJEXT) \
 	bitops.$(OBJEXT)
 wireway_OBJECTS = $(am_wireway_OBJECTS)
@@ -261,7 +261,7 @@ target_alias =
 top_build_prefix = 
 top_builddir = .
 top_srcdir = ..
-wireway_SOURCES = func.h wireway.h wireway_core.c func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c
+wireway_SOURCES = func.h wireway.h wireway_core.c wireway_func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -372,9 +372,9 @@ distclean-compile:
 include ./$(DEPDIR)/bitmap.Po
 include ./$(DEPDIR)/bitops.Po
 include ./$(DEPDIR)/bptree.Po
-include ./$(DEPDIR)/func.Po
 include ./$(DEPDIR)/storage_sys.Po
 include ./$(DEPDIR)/wireway_core.Po
+include ./$(DEPDIR)/wireway_func.Po
 
 .c.o:
 	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
