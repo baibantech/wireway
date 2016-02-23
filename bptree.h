@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <string.h>
 #define pointer_size 5
+typedef int (*bptree_key_cmp_func)(void *src,void *dst);
+typedef unsigned long (*get_data_id_func)(void *data);
+typedef unsigned long (*get_key_id_func)(void *data);
 
 typedef struct node_block
 {
@@ -23,14 +26,18 @@ typedef struct node {
     struct node *parent;
     int num_keys;
     bool is_leaf;
-    node_block *block; 
+    node_block *block;
+    struct tree_root *tree_root; 
 } node;
 
-#if 0
-typedef struct record {
-    int value;
-} record;
-#endif
+typedef struct tree_root {
+    int save;
+    bptree_key_cmp_func  key_cmp;
+    get_data_id_func     get_data_id;
+    get_key_id_func      get_key_id;
+    node *node_root;
+}tree_root;
+
 #if 1 
 typedef struct queue {
     int capacity;
@@ -49,7 +56,7 @@ node *find_leaf(node *root, char *key);
 // Insertion
 node *make_new_node();
 node *make_new_leaf();
-node *make_new_tree(char *key, void *data);
+node *make_new_tree(tree_root *tree,char *key, void *data);
 node *make_new_root(node *left, node *right, char *key,unsigned long key_id);
 node *insert(node *root, char *key,void *data);
 node *insert_into_parent(node *root, node *left, node *right, char *key,unsigned long key_id);

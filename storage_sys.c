@@ -488,16 +488,6 @@ unsigned long get_bptree_rootid()
     }
     return -1;
 }
-unsigned long get_bptree_dataid(void *data)
-{
-    wireway *w = (wireway*)data;
-    return w->block->wireway_id;
-}
-unsigned long get_bptree_keyid(void *data)
-{
-    wireway *w = (wireway*)data;
-    return w->block->name_id;
-}
 
 void save_wireway_block(wireway_block *block)
 {

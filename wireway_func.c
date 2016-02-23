@@ -9,8 +9,25 @@ void list_wireway_tree(node *nd);
 wireway_fib* Alloc_fib();
 wireway *load_wireway_node_no_fib();
 
-node *wirewayTree = NULL;
 wireway *wirewayRestoreList = NULL;
+tree_root wireway_tree_control = {
+    .save = 1,
+    .key_cmp = strcmp,
+    .get_data_id = get_bptree_dataid,
+    .get_key_id = get_bptree_keyid,
+    .node_root = NULL ,
+};
+
+unsigned long get_bptree_dataid(void *data)
+{
+    wireway *w = (wireway*)data;
+    return w->block->wireway_id;
+}
+unsigned long get_bptree_keyid(void *data)
+{
+    wireway *w = (wireway*)data;
+    return w->block->name_id;
+}
 
 void insert_wireway_restore_list(wireway *w)
 {
@@ -48,13 +65,18 @@ int GetStringHash(char *name)
 
 void wireway_tree_restore()
 {
-    wirewayTree = restore_bptree_root();
-    print_tree(wirewayTree);
+    node *wireway = restore_bptree_root();
+    if(wireway)
+    {
+        wireway_tree_control.node_root = wireway;
+        wireway->tree_root = &wireway_tree_control;
+    }
+    print_tree(wireway);
     return;
 }
 int wireway_tree_empty()
 {
-    if(wirewayTree)
+    if(wireway_tree_control.node_root)
     return 0;
 
     return 1;
@@ -65,7 +87,7 @@ wireway *get_wireway_in_mem(char *name)
     wireway *w = find_wireway_restore_list(name);
     if(NULL == w)
     {
-        if(is_data_in_mem(wirewayTree,name))
+        if(is_data_in_mem(wireway_tree_control.node_root,name))
         {
             return lookup_wireway(name);
         }
@@ -264,13 +286,14 @@ wireway *restore_relate_wireway_node(char *name)
 {
     node *leaf;
     int i;
-    leaf = find_leaf(wirewayTree,name);
+    leaf = find_leaf(wireway_tree_control.node_root,name);
     if(leaf == NULL)
     {
         return NULL;
     }
     
-    for(i = 0; i <leaf->num_keys && strcmp(leaf->keys[i],name) != 0;i++);
+    for(i = 0; i <leaf->num_keys && wireway_tree_control.key_cmp(leaf->keys[i],name) != 0;i++);
+
     
     if(i == leaf->num_keys)
     return NULL;
@@ -765,13 +788,13 @@ void insert_restore_wireway_tree(wireway *w)
 
 void insert_wireway_tree(wireway *w)
 {
-    if(NULL == wirewayTree)
+    if(NULL == wireway_tree_control.node_root)
     {
-        wirewayTree = make_new_tree(w->name,w);
+        wireway_tree_control.node_root = make_new_tree(&wireway_tree_control,w->name,w);
     } 
     else
     {
-        wirewayTree = insert(wirewayTree,w->name,w);
+        wireway_tree_control.node_root = insert(wireway_tree_control.node_root,w->name,w);
     }
 }
 
@@ -1025,7 +1048,7 @@ void print_peer_point(point *p)
 
 void print_wireway()
 {
-    list_wireway_tree(wirewayTree);
+    list_wireway_tree(wireway_tree_control.node_root);
 
 }
 void print_wireway_detail(wireway *w)
@@ -1109,7 +1132,7 @@ wireway* lookup_wireway(char *name)
 {
     if(NULL != name)
     {
-       return (wireway*)find(wirewayTree,name); 
+       return (wireway*)find(wireway_tree_control.node_root,name); 
     }
     return NULL;
 }
@@ -1118,7 +1141,7 @@ int is_wireway_exist(char *name)
 {
     if(NULL != name)
     {
-        return is_key_exist(wirewayTree,name);
+        return is_key_exist(wireway_tree_control.node_root,name);
     }
 }
 

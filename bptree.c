@@ -247,7 +247,7 @@ void destroy_node(node *nd)
      free(nd);
 }
 
-node *make_new_tree(char *key, void *data)
+node *make_new_tree(tree_root *tree,char *key, void *data)
 {
     node *root;
     node_block *block;
@@ -265,26 +265,28 @@ node *make_new_tree(char *key, void *data)
     strcpy(root->keys[0], key);
     root->pointers[size-1] = NULL;
     root->num_keys++;
-    key_id = get_bptree_keyid(data);
-    printf("key id size is %d\r\n",sizeof(key_id));
-    printf("key id is 0x%llx\r\n",key_id);
-    data_id = get_bptree_dataid(data);
-    if(key_id != -1 && data_id != -1)
-    {
-        block = root->block;
-        block->pointers_id[0] = data_id;
-        block->keys_id[0] = key_id;
-        block->num_keys = root->num_keys;
-        block->is_leaf = root->is_leaf;
-        save_bptree_root_node(block);
-    }
-    else
-    {
-        free_data_block(data_id);
-        free_key_block(key_id);
-        return NULL;
-    }
+    root->tree_root = tree;
 
+    if(tree->save)
+    {
+        key_id =  tree->get_key_id(data);
+        data_id = tree->get_data_id(data);
+        if(key_id != -1 && data_id != -1)
+        {
+            block = root->block;
+            block->pointers_id[0] = data_id;
+            block->keys_id[0] = key_id;
+            block->num_keys = root->num_keys;
+            block->is_leaf = root->is_leaf;
+            save_bptree_root_node(block);
+        }
+        else
+        {
+            free_data_block(data_id);
+            free_key_block(key_id);
+            return NULL;
+        }
+    }
     return root;
 }
 
@@ -325,7 +327,13 @@ node *make_new_root(node *left, node *right, char *key,unsigned long key_id)
     root->block->num_keys = root->num_keys;
     left->block->parent_id = root->block->node_id;
     right->block->parent_id = root->block->node_id;
-
+    root->tree_root = left->tree_root;
+    if(root->tree_root->save)
+    {
+        save_bptree_root_node(root->block);
+        save_bptree_node(left->block);
+        save_bptree_node(right->block);
+    }
     return root;
 }
 
@@ -333,11 +341,10 @@ node *insert(node *root, char *key, void *data)
 {
     node *leaf;
     int index, cond;
-    leaf = find_leaf(root, key);
-    if (!leaf){  // cannot find the leaf, the tree is empty
-        return make_new_tree(key, data);
-    }
-    for (index = 0; index < leaf->num_keys && (cond = strcmp(leaf->keys[index], key)) < 0; index++)
+    tree_root *tree = root->tree_root;
+    leaf = find_leaf(root, key);/*tree no empty*/
+
+    for (index = 0; index < leaf->num_keys && (cond = tree->key_cmp(leaf->keys[index], key)) < 0; index++)
         ;
     if (cond == 0)  // ignore duplicates
         return root;
@@ -370,6 +377,7 @@ node *insert_into_parent(node *root, node *left, node *right, char *key,unsigned
 void insert_into_node(node *nd, node *right, int index, char *key,unsigned long key_id)
 {
     int i;
+    tree_root *tree = nd->tree_root;
     for (i = nd->num_keys; i > index; i--){
         nd->keys[i] = nd->keys[i-1];
         nd->pointers[i+1] = nd->pointers[i];
@@ -386,6 +394,10 @@ void insert_into_node(node *nd, node *right, int index, char *key,unsigned long 
     nd->block->keys_id[index] = key_id;
     nd->block->pointers_id[index+1] = right->block->node_id;
     nd->block->num_keys = nd->num_keys;
+    if(tree->save)
+    {
+        save_bptree_node(nd->block);
+    }
 }
 
 node *insert_into_node_after_splitting(node *root, node *nd, node *right, int index, char *key,unsigned long key_id)
@@ -463,13 +475,23 @@ node *insert_into_node_after_splitting(node *root, node *nd, node *right, int in
     new_nd->block->pointers_id[i - split] = temp_ps_block[i];
     new_nd->parent = nd->parent;
     new_nd->block->parent_id = nd->parent->block->node_id;
+    new_nd->tree_root = nd->tree_root;
+    
+    if(new_nd->tree_root->save)
+    {
+        save_bptree_node(nd->block);
+        save_bptree_node(new_nd->block);
+    }
 
     for (i = 0; i <= new_nd->num_keys; i++){  //  #pointers == num_keys + 1
         child = (node *)(new_nd->pointers[i]);
         child->parent = new_nd;
         child->block->parent_id = new_nd->block->node_id;
+        if(new_nd->tree_root->save)
+        {
+            save_bptree_node(child->block);
+        }
     }
-
     free(temp_ps);
     free(temp_ks);
     free(temp_ps_block);
@@ -483,6 +505,7 @@ void insert_into_leaf(node *leaf, int index, char *key, void *data)
     int i;
     unsigned long key_id;
     unsigned long data_id;
+    tree_root *tree_control = leaf->tree_root;
     for (i = leaf->num_keys; i > index; i--){
         leaf->keys[i] = leaf->keys[i-1];
         leaf->pointers[i] = leaf->pointers[i-1];
@@ -495,24 +518,26 @@ void insert_into_leaf(node *leaf, int index, char *key, void *data)
     strcpy(leaf->keys[index], key);
     leaf->pointers[index] = data;
     leaf->num_keys++;
-    
-    key_id = get_bptree_keyid(data);
-    data_id = get_bptree_dataid(data);
-    
-    if(key_id != -1 && data_id != -1)
+       
+    if(tree_control->save)
     {
-        leaf->block->pointers_id[index] = data_id;
-        leaf->block->keys_id[index] = key_id;
-        leaf->block->num_keys = leaf->num_keys;
-        save_bptree_node(leaf->block);
+        key_id = tree_control->get_key_id(data);
+        data_id = tree_control->get_data_id(data);
+    
+        if(key_id != -1 && data_id != -1)
+        {
+            leaf->block->pointers_id[index] = data_id;
+            leaf->block->keys_id[index] = key_id;
+            leaf->block->num_keys = leaf->num_keys;
+            save_bptree_node(leaf->block);
+        }
+        else
+        {
+            free_data_block(data_id);
+            free_key_block(key_id);
+            return NULL;
+        }
     }
-    else
-    {
-        free_data_block(data_id);
-        free_key_block(key_id);
-        return NULL;
-    }
-
 }
 
 node *insert_into_leaf_after_splitting(node *root, node *leaf, int index, char *key, void *data)
@@ -524,11 +549,12 @@ node *insert_into_leaf_after_splitting(node *root, node *leaf, int index, char *
 
 
     int i, split;
+    tree_root *tree = root->tree_root;
 
     unsigned long new_key_id ;
-    unsigned long key_id = get_bptree_keyid(data);
+    unsigned long key_id = tree->get_key_id(data);
     
-    unsigned long data_id = get_bptree_dataid(data); 
+    unsigned long data_id = tree->get_data_id(data); 
     
     if(key_id == -1 || data_id == -1)
     {
@@ -589,8 +615,14 @@ node *insert_into_leaf_after_splitting(node *root, node *leaf, int index, char *
     new_leaf->parent = leaf->parent;
     new_leaf->pointers[size - 1] = leaf->pointers[size - 1];
     new_leaf->block->parent_id = leaf->block->parent_id;
+    new_leaf->tree_root = leaf->tree_root;
     leaf->pointers[size - 1] = new_leaf;
     leaf->block->pointers_id[size -1] = new_leaf->block->node_id;
+    if(tree->save)
+    {
+        save_bptree_node(leaf->block);
+        save_bptree_node(new_leaf->block);
+    }    
 
     free(temp_ps);
     free(temp_ks);
