@@ -8,7 +8,7 @@
 typedef int (*bptree_key_cmp_func)(void *src,void *dst);
 typedef unsigned long (*get_data_id_func)(void *data);
 typedef unsigned long (*get_key_id_func)(void *data);
-
+typedef unsigned long (*alloc_bptree_node_func)();
 typedef struct node_block
 {
     unsigned long node_id;
@@ -32,9 +32,12 @@ typedef struct node {
 
 typedef struct tree_root {
     int save;
+
     bptree_key_cmp_func  key_cmp;
     get_data_id_func     get_data_id;
     get_key_id_func      get_key_id;
+    alloc_bptree_node_func alloc_block_func;
+ 
     node *node_root;
 }tree_root;
 
@@ -54,8 +57,8 @@ void *find(node *root, char *key);
 node *find_leaf(node *root, char *key);
 
 // Insertion
-node *make_new_node();
-node *make_new_leaf();
+node *make_new_node(tree_root *tree);
+node *make_new_leaf(tree_root *tree);
 node *make_new_tree(tree_root *tree,char *key, void *data);
 node *make_new_root(node *left, node *right, char *key,unsigned long key_id);
 node *insert(node *root, char *key,void *data);

@@ -40,9 +40,12 @@ typedef struct user_logic_port_tag
 
 typedef struct user_entity_desc_tag
 {
+    char state;
     char *name;
+    char *group_name;
     unsigned long user_id;
     unsigned long user_block_id;
+    unsigned long user_token;    
     user_logic_port *port;
     relate_point_array *owner_point;
     relate_point_array *attach_point;   

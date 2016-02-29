@@ -8,9 +8,10 @@
 #include "storage_sys.h"
 
 
-int storage_zone_bptree_id = -1;
+int storage_zone_wireway_bptree_id = -1;
 int storage_zone_key_id = -1;
 int storage_zone_wireway_id = -1;
+int storage_zone_usr_bptree_id = -1;
 
 storage_zone_head *global_zone_head = NULL;
 storage_buddy_head *buddy_head = NULL;
@@ -435,16 +436,6 @@ unsigned long save_name(char *key)
     return -1;
 }
 
-   
-unsigned long  alloc_bptree_block()
-{
-    return alloc_block_from_zone(storage_zone_bptree_id);
-}
-
-unsigned long alloc_wireway_block()
-{
-    return alloc_block_from_zone(storage_zone_wireway_id);
-}
 
 void save_bptree_node(node_block *block)
 {
@@ -454,11 +445,11 @@ void save_bptree_node(node_block *block)
 void save_bptree_root_node(node_block *block)
 {
     save_bptree_node(block);
-    set_bptree_root_id(block->node_id);
+    set_bptree_root_id(block->node_id ,block->node_id >>(BITS_PER_LONG-BITS_PER_BYTE));
 }
-void set_bptree_root_id(unsigned long root_id)
+void set_bptree_root_id(unsigned long root_id,unsigned long zone_id)
 {
-    storage_zone *zone = get_zone(storage_zone_bptree_id);
+    storage_zone *zone = get_zone(zone_id);
     storage_media *media = NULL;
     FILE *stream = NULL;
     if(zone)
@@ -479,9 +470,9 @@ void set_bptree_root_id(unsigned long root_id)
     }
 }
 
-unsigned long get_bptree_rootid()
+unsigned long get_bptree_rootid(unsigned long zone_id)
 {
-    storage_zone *zone = get_zone(storage_zone_bptree_id);
+    storage_zone *zone = get_zone(zone_id);
     if(zone)
     {
         return zone->root_id;
@@ -507,11 +498,12 @@ void free_data_block(unsigned long id)
 
 int storage_sys_init()
 {
-    storage_zone_bptree_id = reg_storage_zone("bptree_node",zone_block_type,sizeof(node_block)+1,1000);
+    storage_zone_wireway_bptree_id = reg_storage_zone("wireway_bptree_node",zone_block_type,sizeof(node_block)+1,1000);
+    storage_zone_usr_bptree_id = reg_storage_zone("usr_bptree_node",zone_block_type,sizeof(node_block)+1,1000);
     storage_zone_key_id    = reg_storage_zone("name_cache",zone_block_type,64,1000);
     storage_zone_wireway_id = reg_storage_zone("wireway_struct",zone_block_type,sizeof(wireway_block),1000);
 
-    if(storage_zone_bptree_id == -1 || storage_zone_key_id == -1 || storage_zone_wireway_id == -1)
+    if(storage_zone_wireway_bptree_id == -1 || storage_zone_key_id == -1 || storage_zone_wireway_id == -1|| storage_zone_usr_bptree_id == -1)
     {
         return -1;
     }

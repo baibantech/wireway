@@ -82,9 +82,6 @@ typedef struct file_handle_item
 
 }file_handle_item;
 
-unsigned long alloc_bptree_block();
-
-unsigned long alloc_wireway_block();
 
 storage_zone *alloc_storage_zone(char *zone_name,int zone_type,int block_size,int per_media_count);
 
@@ -101,10 +98,6 @@ void free_data_block(unsigned long id);
 FILE *find_file_stream(storage_zone *zone,int file_index);
 
 unsigned long get_bptree_rootid();
-
-unsigned long get_bptree_dataid(void *data);
-
-unsigned long get_bptree_keyid(void *data);
 
 storage_zone *get_zone(int zone_id);
 
@@ -125,7 +118,7 @@ void save_bptree_node(node_block *block);
 
 void save_bptree_root_node(node_block *block);
 
-void set_bptree_root_id(unsigned long root_id);
+void set_bptree_root_id(unsigned long root_id,unsigned long zone_id);
 
 void save_wireway_block(wireway_block *block);
 
