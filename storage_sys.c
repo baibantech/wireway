@@ -11,7 +11,6 @@
 int storage_zone_wireway_bptree_id = -1;
 int storage_zone_key_id = -1;
 int storage_zone_wireway_id = -1;
-int storage_zone_usr_bptree_id = -1;
 
 storage_zone_head *global_zone_head = NULL;
 storage_buddy_head *buddy_head = NULL;
@@ -498,14 +497,14 @@ void free_data_block(unsigned long id)
 
 int storage_sys_init()
 {
-    storage_zone_wireway_bptree_id = reg_storage_zone("wireway_bptree_node",zone_block_type,sizeof(node_block)+1,1000);
-    storage_zone_usr_bptree_id = reg_storage_zone("usr_bptree_node",zone_block_type,sizeof(node_block)+1,1000);
-    storage_zone_key_id    = reg_storage_zone("name_cache",zone_block_type,64,1000);
-    storage_zone_wireway_id = reg_storage_zone("wireway_struct",zone_block_type,sizeof(wireway_block),1000);
+    storage_zone_wireway_bptree_id = reg_storage_zone("save_wireway_bptree_node",zone_block_type,sizeof(node_block)+1,1000);
+    storage_zone_key_id    = reg_storage_zone("save_name_cache",zone_block_type,64,1000);
+    storage_zone_wireway_id = reg_storage_zone("save_wireway_struct",zone_block_type,sizeof(wireway_block),1000);
 
-    if(storage_zone_wireway_bptree_id == -1 || storage_zone_key_id == -1 || storage_zone_wireway_id == -1|| storage_zone_usr_bptree_id == -1)
+    if(storage_zone_wireway_bptree_id == -1 || storage_zone_key_id == -1 || storage_zone_wireway_id == -1)
     {
         return -1;
     }
+    if(-1 == 
     return 0;
 }

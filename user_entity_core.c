@@ -1,9 +1,40 @@
 #include "user_entity.h"
 #include "bptree.h"
 
-int storage_zone_usr_bptree_id ;
+typedef struct user_entity_base_block
+{
+    char state;
+    int user_name_len;
+    int group_name_len;
+    int port_num;
+    unsigned long name_id;
+    unsigned long user_token;
+}user_entity_base_block;
 
+typedef struct user_port_base_block
+{
+    char port_name[32];
+    int port_index;
+    int port_type;
+    int port_state;
+    int addr_num;
+}user_port_base_block;
 
+typedef  struct user_port_addr_block
+{
+    union {
+        unsigned long addr;
+        char addr_string[64];
+    }port_logic_addr;
+
+    union {
+        unsigned long phy_addr;
+        char phy_addr_string[64];
+    }port_phy_addr;
+
+}user_port_addr_block;
+
+int storage_zone_usr_bptree_id = -1 ;
 
 tree_root user_entity_control
 {
@@ -44,14 +75,64 @@ unsigned long alloc_user_entity_block()
 
 user_entity_desc *alloc_user_entity_inst()
 {
+    user_entity_desc *dsc = NULL;
+    dsc = (user_entity_desc*)malloc(sizeof(user_entity_desc));
+    if(dsc)
+    {
+        memset(dsc,0,sizeof(user_entity_desc));
+        dsc->user_block_id = alloc_user_entity_block();
+        if(-1 == dsc->user_block_id)
+        {
+            free(dsc);
+            return NULL;
+        }
+    }
+    return NULL;
+}
+void save_user_entity(user_entity_desc *desc)
+{
 
 
 
 }
 
-int init_user_entity(user_entity_desc *desc)
+int init_user_entity(user_entity_desc *desc,reg_entity_req *req)
 {
+    int len;
+    char *name = NULL;
+    char *key_name = NULL;
+    name = malloc(strlen(req->name)+1);
+    if(!name){
+        return -1; 
+    }
+    strcpy(name,req->name);
+    desc->name = name;
+    
+    name = malloc(strlen(req->group_name)+1);
+    if(!name){
+        free(desc->name);
+        return -1;
+    }
+    key_name = malloc(strlen(req->name)+strlen(req->group_name) +2);
+    if(!key_name){
+        free(desc->name);
+        free(desc->group_name);
+        return -1;
+    }     
+    sprintf(key_name,"%s#%s",req->name,req->group_name);
+    strcpy(name,req->group_name);
+    desc->group_name = name;
+    desc->state = user_entity_pre_reg;     
+    desc->user_token = assign_user_entity_token(desc);
+    desc->name_id = save_name(key_name);
+    if(-1 == desc->name_id){
+        free(key_name);
+        free(desc->group_name);
+        free(desc->name);
+        renturn -1;
+    }
 
+    save_user_entity(desc);
 }
 void user_entity_tree_restore()
 {
