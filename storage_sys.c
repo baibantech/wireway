@@ -377,6 +377,52 @@ void save_data(unsigned long  storage_id,void* data,int len)
     return ;
 }
 
+void save_data_offset(unsigned long storage_id,void *data,int len,int off)
+{
+    int zone_id  = storage_id >>(BITS_PER_LONG-BITS_PER_BYTE);
+    storage_zone *zone = get_zone(zone_id);
+    if(zone)
+    {
+        switch(zone->zone_type)
+        {
+            case zone_block_type:
+            {
+                int file_index = ((storage_id << BITS_PER_BYTE) >>(BITS_PER_BYTE))/zone->block_count;
+                FILE *stream = find_file_stream(zone,file_index);
+                int media_len = sizeof(storage_media)+(zone->block_count/sizeof(long) +1)*sizeof(long);
+                if(stream)
+                {
+                    int offset = ((storage_id << BITS_PER_BYTE) >>(BITS_PER_BYTE))%zone->block_count;
+                    offset = offset*zone->block_size;
+                    if(0 == file_index)
+                    {
+                        offset = offset + sizeof(storage_zone);
+                    }
+                    offset = offset + media_len + off;
+                    fseek(stream,offset,SEEK_SET);
+                    fwrite(data,len,1,stream);
+                } 
+                break;   
+            }
+            case zone_free_type:
+            default:
+            printf("zone type err\r\n");
+            break;
+        }
+    }
+    return ;
+}
+
+void save_data_offset(unsigned long storage_id,void *data,int len,int offset)
+
+
+
+
+
+
+
+}
+
 void *read_data(unsigned long  storage_id)
 {
     int zone_id  = storage_id >>(BITS_PER_LONG-BITS_PER_BYTE);

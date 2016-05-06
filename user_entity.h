@@ -1,81 +1,80 @@
 #ifndef __user_entity__
 #define __user_entity__
-#include "wireway.h"
 
-// define user entity state
-
-#define user_entity_pre_reg 1
-#define user_entity_reg 2
-
-
-typedef struct relate_point_desc
+#define USER_BLOCK_CONTENT_LEN 1024
+#define USER_BLOCK_MAX_STRORAGE_ARRAY (1024-sizeof(int)*6-sizeof(user_entity_base_block))/(6*sizeof(unsigned long))
+typedef  struct user_port_addr_block
 {
-    int index;
-    int port_index;
-    point *p;
-}relate_wireway_point;
-
-typedef struct relate_point_array
-{
-    int num;
-    relate_wireway_point[100];
-    relate_point_array *next_array;
-}relate_point_array;
-typedef struct user_port_addr
-{
+    int addr_type;
     union {
         unsigned long addr;
         char addr_string[64];
     }port_logic_addr;
-    
+
     union {
         unsigned long phy_addr;
         char phy_addr_string[64];
-    }port_phy_addr;    
+    }port_phy_addr;
 
-    struct user_port_addr *next;
-}user_port_addr;
+}user_port_addr_block;
 
-typedef struct user_logic_port_tag
+typedef struct user_entity_base_block
 {
+    char state;
+    int user_name_len;
+    int group_name_len;
+    int port_num;
+    int relate_wireway_num;
+    int relate_point_num;
+    unsigned long name_id;
+    unsigned long block_id;
+    unsigned long user_token;
+}user_entity_base_block;
+
+typedef struct user_port_base_block
+{
+    int port_len;
+    int next_offset;
     char port_name[32];
     int port_index;
     int port_type;
     int port_state;
     int addr_num;
-    user_port_addr *port_addr;
-}user_logic_port;
+    user_port_addr_block addr_block[0];
+}user_port_block;
 
-typedef struct user_entity_desc_tag
+typedef struct create_wire_desc
 {
-    char state;
-    char *name;
-    char *group_name;
-    unsigned long name_id;
-    unsigned long user_block_id;
-    unsigned long user_token;
-    int port_num;    
-    user_logic_port *port;
-    relate_point_array *owner_point;
-    relate_point_array *attach_point;   
-}user_entity_desc;
+    int index;
+    unsigned long wireway_name_id;
+}create_wire_block;
 
-typedef struct user_entity_block
+typedef struct attach_point_desc
 {
-    unsigned long next_block_id;
-    int content_len;
-    int base_offset;
-    int port_offset;
-    int port_len;
-    int relate_point_offset;
-    int relate_point_len;
-    char content[500];
-}user_entity_block;
+    unsigned long wireway_name_id;
+    int port_index;
+    int index;
+}attach_point_block;
 
-//int lookup_resource_server();
-//int reg_to_resource_server(); 
-int prepare_reg_entity();
-int reg_entity();
-int addr_entity_port();
+typedef struct user_entity_content_block
+{
+    int obj_num;
+    char content[USER_BLOCK_CONTENT_LEN];
+}user_entity_content_block;
+
+
+typedef struct user_entity_root_block
+{
+    int used_port_storage;
+    int used_create_wire_storage;
+    int used_attach_point_storage;
+    user_entity_base_block base_info;
+
+    unsigned long port_storage_id[USER_BLOCK_MAX_STRORAGE_ARRAY];
+    unsigned long create_wire_storage_id[USER_BLOCK_MAX_STRORAGE_ARRAY];
+    unsigned long attach_point_storage_id[USER_BLOCK_MAX_STRORAGE_ARRAY];    
+}user_entity_root_block;
+
 
 #endif
+
