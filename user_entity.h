@@ -75,6 +75,25 @@ typedef struct user_entity_root_block
     unsigned long attach_point_storage_id[USER_BLOCK_MAX_STRORAGE_ARRAY];    
 }user_entity_root_block;
 
+typedef struct reg_entity_req
+{
+    int msg_type;
+    char *name;
+    char *group_name;
+    unsigned long reg_token;
+    int msg_size;
+    char content[0];
+}reg_entity_req;
+
+
+
+unsigned long get_user_entity_key(void *data);
+unsigned long get_user_entity_data(void *data);
+unsigned long alloc_user_bptree_block();
+unsigned long alloc_user_entity_block();
+
+
+
 
 #endif
 

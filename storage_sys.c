@@ -413,16 +413,6 @@ void save_data_offset(unsigned long storage_id,void *data,int len,int off)
     return ;
 }
 
-void save_data_offset(unsigned long storage_id,void *data,int len,int offset)
-
-
-
-
-
-
-
-}
-
 void *read_data(unsigned long  storage_id)
 {
     int zone_id  = storage_id >>(BITS_PER_LONG-BITS_PER_BYTE);
@@ -551,6 +541,4 @@ int storage_sys_init()
     {
         return -1;
     }
-    if(-1 == 
-    return 0;
 }

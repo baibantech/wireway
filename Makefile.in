@@ -97,7 +97,8 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_wireway_OBJECTS = wireway_core.$(OBJEXT) wireway_func.$(OBJEXT) \
 	bptree.$(OBJEXT) storage_sys.$(OBJEXT) bitmap.$(OBJEXT) \
-	bitops.$(OBJEXT)
+	bitops.$(OBJEXT) user_entity.$(OBJEXT) \
+	user_entity_core.$(OBJEXT) wireway_server.$(OBJEXT)
 wireway_OBJECTS = $(am_wireway_OBJECTS)
 wireway_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -261,7 +262,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-wireway_SOURCES = func.h wireway.h wireway_core.c wireway_func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c
+wireway_SOURCES = func.h wireway.h wireway_core.c wireway_func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c user_entity.c user_entity_core.c wireway_server.c
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -373,8 +374,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bitops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bptree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/storage_sys.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/user_entity.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/user_entity_core.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wireway_core.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wireway_func.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wireway_server.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

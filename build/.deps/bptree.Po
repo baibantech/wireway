@@ -34,7 +34,7 @@ bptree.o: ../bptree.c /usr/include/stdc-predef.h ../bptree.h \
  /usr/include/x86_64-linux-gnu/bits/string.h \
  /usr/include/x86_64-linux-gnu/bits/string2.h \
  /usr/include/x86_64-linux-gnu/bits/string3.h ../storage_sys.h ../list.h \
- ../wireway.h
+ ../wireway.h ../user_entity.h
 
 /usr/include/stdc-predef.h:
 
@@ -131,3 +131,5 @@ bptree.o: ../bptree.c /usr/include/stdc-predef.h ../bptree.h \
 ../list.h:
 
 ../wireway.h:
+
+../user_entity.h:

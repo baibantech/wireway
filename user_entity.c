@@ -1,28 +1,23 @@
 #include "user_entity.h"
 #include "bptree.h"
-
-typedef struct reg_entity_req
-{
-    int msg_type;
-    char *name;
-    char *group_name;
-    unsigned long reg_token;
-    int msg_size;
-    char content[0];    
-}reg_entity_req;
+#include "wireway.h"
 
 unsigned long prepare_reg_entity(reg_entity_req *req)
 {
     int len = 0;
+    int name_len , group_name_len = 0;
     char *key_name = NULL;
     user_entity_desc *dsc = NULL;
-    if(NULL == req || 0 == strlen(req->name)|| 0== strlen(group_name))
+    if(NULL == req || 0 == strlen(req->name)|| 0== strlen(req->group_name))
     {
         return -1;
     }
-    if(group_name[strlen(group_name)-1]!= `#')
+    name_len = strlen(req->name);
+    group_name_len = strlen(req->group_name);    
+
+    if(req->group_name[group_name_len-1]!= '#')
     {
-        key_name = malloc(strlen(group_name)+strlen(name)+1);
+        key_name = malloc(name_len + group_name_len+1);
         if(NULL == key_name){
             return -1;
         } 

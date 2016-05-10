@@ -97,7 +97,8 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_wireway_OBJECTS = wireway_core.$(OBJEXT) wireway_func.$(OBJEXT) \
 	bptree.$(OBJEXT) storage_sys.$(OBJEXT) bitmap.$(OBJEXT) \
-	bitops.$(OBJEXT)
+	bitops.$(OBJEXT) user_entity.$(OBJEXT) \
+	user_entity_core.$(OBJEXT) wireway_server.$(OBJEXT)
 wireway_OBJECTS = $(am_wireway_OBJECTS)
 wireway_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_$(V))
@@ -261,7 +262,7 @@ target_alias =
 top_build_prefix = 
 top_builddir = .
 top_srcdir = ..
-wireway_SOURCES = func.h wireway.h wireway_core.c wireway_func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c
+wireway_SOURCES = func.h wireway.h wireway_core.c wireway_func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c user_entity.c user_entity_core.c wireway_server.c
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -373,8 +374,11 @@ include ./$(DEPDIR)/bitmap.Po
 include ./$(DEPDIR)/bitops.Po
 include ./$(DEPDIR)/bptree.Po
 include ./$(DEPDIR)/storage_sys.Po
+include ./$(DEPDIR)/user_entity.Po
+include ./$(DEPDIR)/user_entity_core.Po
 include ./$(DEPDIR)/wireway_core.Po
 include ./$(DEPDIR)/wireway_func.Po
+include ./$(DEPDIR)/wireway_server.Po
 
 .c.o:
 	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

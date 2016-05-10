@@ -1,22 +1,22 @@
 #include "wireway.h"
 #include "user_entity.h"
 #include "bptree.h"
-
+#include "storage_sys.h"
 int storage_zone_usr_bptree_id = -1 ;
-
-tree_root user_entity_control
+int storage_zone_usr_entity_id = -1;
+tree_root user_entity_control =
 {
     .save = 1 ,
     .key_cmp = strcmp,
-    .get_key_id_func = get_user_entity_key,
-    .get_data_id_func = get_user_entity_data,
-    .alloc_node_func = alloc_user_bptree_block;
+    .get_key_id = get_user_entity_key,
+    .get_data_id = get_user_entity_data,
+    .alloc_block_func = alloc_user_bptree_block,
     .node_root = NULL,
 };
 
 int user_entity_storage_zone_reg()
 {
-    storage_zone_usr_bptree_id = reg_storage_zone("usr_bptree",zone_block_type,sizeof(user_entity_block)+4,1000);
+    storage_zone_usr_bptree_id = reg_storage_zone("usr_bptree",zone_block_type,sizeof(user_entity_root_block)+4,1000);
     if(-1 == storage_zone_usr_bptree_id)
     {
         return -1;
@@ -38,7 +38,7 @@ unsigned long get_user_entity_key(void *data)
 unsigned long get_user_entity_data(void *data)
 {
     user_entity_desc *desc = (user_entity_desc*)data;
-    return desc->user_block_id;
+    return desc->root_block_id;
 }
 
 unsigned long alloc_user_bptree_block()
@@ -54,7 +54,7 @@ unsigned long alloc_user_entity_block()
 user_entity_desc *alloc_user_entity_inst()
 {
     user_entity_desc *dsc = NULL;
-    user_entity_block *block = NULL;
+    user_entity_root_block *block = NULL;
     dsc = (user_entity_desc*)malloc(sizeof(user_entity_desc));
     if(dsc)
     {
@@ -76,7 +76,7 @@ user_entity_desc *alloc_user_entity_inst()
         }
         
         save_data(dsc->root_block_id,block,sizeof(user_entity_root_block));
-        desc->block = block;
+        dsc->block = block;
     }
     return NULL;
 }
@@ -94,24 +94,28 @@ int save_user_entity(user_entity_desc *desc)
     unsigned long *storage_array = NULL;    
     user_entity_root_block *root_block = desc->block;  
     
-    unsigned long root_storage_id = curr_storage_id = -1;
+    unsigned long root_storage_id = -1, curr_storage_id = -1;
 
     struct list_head *pos,*pos1;
     int len = 0;
     int i,j,k;
     
     int port_info_offset;
+    int block_count;
+    int curr_wire_offset_index = 0;
+    int attach_point_offset_index = 0;
+    int attach_point_info_len = 0;
 
     /*collect base info*/
-    root_block->base_info->state = desc->state;
-    root_block->base_info->user_name_len = strlen(desc->name);
-    root_block->base_info->group_name_len = strlen(desc->group_name);
-    root_block->base_info->port_num = desc->port_num;
-    root_block->base_info->relate_wireway_num = desc->relate_wireway_num;
-    root_block->base_info->relate_point_num = desc->relate_point_num;
-    root_block->base_info->name_id = desc->name_id;
-    root_block->base_indo->block_id = desc->user_block_id;
-    root_block->base_info->user_token = desc->user_token;
+    root_block->base_info.state = desc->state;
+    root_block->base_info.user_name_len = strlen(desc->name);
+    root_block->base_info.group_name_len = strlen(desc->group_name);
+    root_block->base_info.port_num = desc->port_num;
+    root_block->base_info.relate_wireway_num = desc->relate_wireway_num;
+    root_block->base_info.relate_point_num = desc->relate_point_num;
+    root_block->base_info.name_id = desc->name_id;
+    root_block->base_info.block_id = desc->root_block_id;
+    root_block->base_info.user_token = desc->user_token;
 
     root_storage_id = desc->root_block_id;
 
@@ -131,22 +135,22 @@ int save_user_entity(user_entity_desc *desc)
                 return -1;
             }
             port_head = malloc(len);
-            if(NULL = port_head) {
-                goto free_port;
+            if(NULL == port_head) {
+                return -1;
             }
             port_head->port_len = len; 
             port_head->port_index = port->port_index;
             port_head->port_type = port->port_type;
             port_head->port_state = port->port_state;
-            port_head->addr_num = port->port_num;
+            port_head->addr_num = port->addr_num;
             strcpy(port_head->port_name,port->port_name);
             j = 0;        
             list_for_each(pos1,&port->addr_list)
             {
                 addr = list_entry(pos1,user_port_addr,list);
-                port_head->addr_block[j].type = addr->type; 
-                port_head->addr_block[j].port_logic_addr = addr->port_logc_addr;
-                port_head->addr_block[j].port_phy_addr = addr->port_phy_addr;
+                port_head->addr_block[j].addr_type = addr->addr_type; 
+                strcpy(port_head->addr_block[j].port_logic_addr.addr_string , addr->port_logic_addr.addr_string);
+                strcpy(port_head->addr_block[j].port_phy_addr.phy_addr_string , addr->port_phy_addr.phy_addr_string);
                 j++;
             }
        
@@ -167,11 +171,11 @@ int save_user_entity(user_entity_desc *desc)
                 /*exchage old block*/
                 if(-1 != root_block->port_storage_id[k])
                 {
-                    free_data(root_block->port_storage_id[k]);
+                    free_data_block(root_block->port_storage_id[k]);
                 }
                 root_block->port_storage_id[k] = curr_storage_id;
                 k++;
-                save_data(curr_storage_id,0,&i,sizeof(i));
+                save_data_offset(curr_storage_id,0,&i,sizeof(i));
                 i = 1;
                 curr_storage_id = alloc_user_entity_block();
                 if(-1 == curr_storage_id)
@@ -180,7 +184,7 @@ int save_user_entity(user_entity_desc *desc)
                 }
                 port_info_offset = sizeof(int);
             }
-            save_data_offscet(curr_storage_id,port_info_offset ,port_head,len);
+            save_data_offset(curr_storage_id,port_info_offset ,port_head,len);
             port_info_offset += len; 
         }
     } 
@@ -190,19 +194,19 @@ int save_user_entity(user_entity_desc *desc)
     k = 0;
     create_wire_info_len = desc->relate_wireway_num*sizeof(create_wire_block);
     block_count = USER_BLOCK_CONTENT_LEN/sizeof(create_wire_block);
-    create_wire_offset_index = 0;
+    curr_wire_offset_index = 0;
     if(create_wire_info_len){
         create_wire = malloc(create_wire_info_len);
         if(NULL == create_wire)
         {
-            goto free_port;
+            return -1;
         }
 
         list_for_each(pos,&desc->create_wire_list)
         {
             w = list_entry(pos,wireway,usr_list);
-            create_wire[i]->wireway_name_id = w->block->name_id;
-            create_wire[i]->index = i; 
+            create_wire[i].wireway_name_id = w->block->name_id;
+            create_wire[i].index = i; 
             i++;
             if(0 == (i% block_count))
             {
@@ -211,7 +215,7 @@ int save_user_entity(user_entity_desc *desc)
                 {
                     return -1;
                 }
-                save_data(curr_storage_id,sizeof(int),&create_wire[curr_wire_offset_index],sizeof(create_wire_block)*(i-curr_wire_offset_index);
+                save_data_offset(curr_storage_id,sizeof(int),&create_wire[curr_wire_offset_index],sizeof(create_wire_block)*(i-curr_wire_offset_index));
                 root_block->create_wire_storage_id[k++] = curr_storage_id;
                 curr_storage_id = -1;
                 curr_wire_offset_index = i - 1;
@@ -224,7 +228,7 @@ int save_user_entity(user_entity_desc *desc)
             {
                 return -1;
             }
-            save_data(curr_storage_id,sizeof(int),&create_wire[curr_wire_offset_index],sizeof(create_wire_block)*(i-curr_wire_offset_index);
+            save_data_offset(curr_storage_id,sizeof(int),&create_wire[curr_wire_offset_index],sizeof(create_wire_block)*(i-curr_wire_offset_index));
             root_block->create_wire_storage_id[k++] = curr_storage_id;
         }
     }
@@ -240,16 +244,16 @@ int save_user_entity(user_entity_desc *desc)
         attach_point = malloc(sizeof(attach_point_block)*desc->relate_point_num);
         if(NULL == attach_point)
         {
-            goto free_create_wire;
+            return -1;
         }
 
         i = 0;
         list_for_each(pos,&desc->attach_point)
         {
             point *p = list_entry(pos,point,usr);
-            attach_point[i]->index = i;
-            attach_point[i]->wireway_name_id = p->wire->block->name_id;
-            attach_point[i]->port_index = p->index; 
+            attach_point[i].index = i;
+            attach_point[i].wireway_name_id = p->wire->block->name_id;
+            attach_point[i].port_index = p->index; 
             i++;
             if(0 == (i% block_count))
             {
@@ -258,7 +262,7 @@ int save_user_entity(user_entity_desc *desc)
                 {
                     return -1;
                 }
-                save_data(curr_storage_id,sizeof(int),&attach_point[attach_point_offset_index],sizeof(attach_point_block)*(i-curr_wire_offset_index);
+                save_data_offset(curr_storage_id,sizeof(int),&attach_point[attach_point_offset_index],sizeof(attach_point_block)*(i-attach_point_offset_index));
                 root_block->attach_point_storage_id[k++] = curr_storage_id;
                 curr_storage_id = -1;
                 attach_point_offset_index = i - 1;
@@ -266,14 +270,14 @@ int save_user_entity(user_entity_desc *desc)
             
         }
 
-        if(0 == (i% block_count))
+        if(attach_point_offset_index < i-1)
         {
             curr_storage_id = alloc_user_entity_block();
             if(curr_storage_id == -1)
             {
                 return -1;
             }
-            save_data(curr_storage_id,sizeof(int),&attach_point[attach_point_offset_index],sizeof(attach_point_block)*(i-curr_wire_offset_index);
+            save_data_offset(curr_storage_id,sizeof(int),&attach_point[attach_point_offset_index],sizeof(attach_point_block)*(i-attach_point_offset_index));
             root_block->attach_point_storage_id[k++] = curr_storage_id;
         }
 
@@ -282,6 +286,11 @@ int save_user_entity(user_entity_desc *desc)
     }
 
 }
+int assign_user_entity_token()
+{
+    return 1;
+}
+
 
 int init_user_entity(user_entity_desc *desc,reg_entity_req *req)
 {
@@ -316,7 +325,7 @@ int init_user_entity(user_entity_desc *desc,reg_entity_req *req)
         free(key_name);
         free(desc->group_name);
         free(desc->name);
-        renturn -1;
+        return -1;
     }
     
     desc->port_num = 0;

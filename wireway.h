@@ -2,6 +2,7 @@
 #define __wireway__
 #include <stdio.h>
 #include "list.h"
+#include "user_entity.h"
 #define MAX_LEN 32
 #define point_in 1
 #define point_out 2
@@ -90,6 +91,7 @@ typedef struct point_tag
     struct list_head usr;
     struct wireway_tag *wire;
     int index;
+    int addr;
     char dest;
     char state;
     char type;
