@@ -189,7 +189,7 @@ typedef struct wireway_tag
 {
     char   *name;
     struct wireway_tag *next;
-    user_entity_desc *ower;
+    user_entity_desc *owner;
     struct list_head usr_list; 
     
     struct point_tag *peer[2];

@@ -370,35 +370,110 @@ user_entity_desc *load_user_entity(unsigned long entity_id)
 
     /*load port num*/
    // port_block_num = root_block->base_info.used_port_num;
+    load_entity_port(root_block,dsc);
+    load_entity_relate_wireway(root_block,dsc);
+    load_entity_attach_point(root_block,dsc);
 
-
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    return NULL;
+    return dsc;
 }
 
-int load_port_num(user_entity_root_block *root_block,user_entity_desc *dsc)
+int load_entity_relate_wireway(user_entity_root_block *root_block,user_entity_desc *dsc)
 {
-    int port_num = root_block->base_info.used_port_num;
+    int wireway_block_num = root_block->base_info.used_wireway_num;
     int obj_num = 0;
     int offset = 0;
     int i,j,k;
     user_entity_content_block *block = NULL;
-    for(i = 0; i < port_num; i++)
+    for(i = 0; i < wireway_block_num; i++)
+    {
+        block = read_data(root_block->create_wire_storage_id[i]);
+        if(!block)
+        {
+            return -1;
+        }        
+        
+        obj_num = block->obj_num;
+        
+        for( j = 0 ; j < obj_num ; j++)
+        {
+            offset = j *sizeof(create_wire_block);
+            create_wire_block *wire_block = &block->content[offset];
+            unsigned long name_id = wire_block->wireway_name_id;
+            char *wire_name = read_data(name_id);
+            wireway *w = lookup_wireway(wire_name);
+            if(!w)
+            {
+               return NULL;
+            }
+            if(w->owner && w->owner != dsc)
+            {
+                return NULL;
+            }
+            
+            if(NULL == w->owner)
+            {
+                w->owner = dsc;
+                INIT_LIST_HEAD(&w->usr_list);
+                list_add(&dsc->create_wire_list,&w->usr_list);
+            }
+            else
+            {
+                printf("wireway restore the user entity\r\n");
+            }
+            
+        }       
+    }
+    return 0;
+}
+
+int load_entity_attach_point(user_entity_root_block *root_block,user_entity_desc *dsc)
+{
+    int point_block_num = root_block->base_info.used_point_num;
+    int obj_num = 0;
+    int offset = 0;
+    int i,j,k;
+    user_entity_content_block *block = NULL;
+    for(i = 0; i < point_block_num; i++)
+    {
+        block = read_data(root_block->attach_point_storage_id[i]);
+        if(!block)
+        {
+            return -1;
+        }        
+        
+        obj_num = block->obj_num;
+        
+        for( j = 0 ; j < obj_num ; j++)
+        {
+            offset = j *sizeof(attach_point_block);
+            attach_point_block *point_block = &block->content[offset];
+            char *wireway_name = read_data(point_block->wireway_name_id);
+            wireway *w = lookup_wireway(wireway_name);
+            if(!w)
+            {
+                return -1;
+            }
+            point *p = get_peer_by_index(w,point_block->port_index);
+            if(!p)
+            {
+                return -1;
+            }
+
+            INIT_LIST_HEAD(&p->usr);
+            list_add(&dsc->attach_point,&p->usr);            
+        }       
+    }
+    return 0;
+}
+
+int load_entity_port(user_entity_root_block *root_block,user_entity_desc *dsc)
+{
+    int port_block_num = root_block->base_info.used_port_num;
+    int obj_num = 0;
+    int offset = 0;
+    int i,j,k;
+    user_entity_content_block *block = NULL;
+    for(i = 0; i < port_block_num; i++)
     {
         block = read_data(root_block->port_storage_id[i]);
         if(!block)
@@ -423,6 +498,7 @@ int load_port_num(user_entity_root_block *root_block,user_entity_desc *dsc)
             port->port_type = port_block->port_type;
             port->port_state = port_block->port_state;
             port->addr_num  = port_block->addr_num;
+            offset = offset + port_block->port_len;
             
             for( k = 0;k < port->addr_num ; k++)
             {
@@ -444,7 +520,7 @@ int load_port_num(user_entity_root_block *root_block,user_entity_desc *dsc)
          
     }
 
-
+    return 0;
 }
 
 
