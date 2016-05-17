@@ -118,8 +118,6 @@ int save_user_entity(user_entity_desc *desc)
     root_block->base_info.user_token = desc->user_token;
 
     root_storage_id = desc->root_block_id;
-
-    save_data(root_storage_id,root_block,sizeof(user_entity_root_block)); 
     
     /*collect port infomation*/
     k = 0;
@@ -175,6 +173,10 @@ int save_user_entity(user_entity_desc *desc)
                 }
                 root_block->port_storage_id[k] = curr_storage_id;
                 k++;
+                if(k > USER_BLOCK_MAX_STORAGE_ARRAY - 1)
+                {
+                    return -1;
+                }
                 save_data_offset(curr_storage_id,0,&i,sizeof(i));
                 i = 1;
                 curr_storage_id = alloc_user_entity_block();
@@ -187,7 +189,10 @@ int save_user_entity(user_entity_desc *desc)
             save_data_offset(curr_storage_id,port_info_offset ,port_head,len);
             port_info_offset += len; 
         }
-    } 
+    }
+    
+    root_block->base_info.used_port_num = k;    
+
     /*collect create wireway info*/
     curr_storage_id = -1;
     i  = 0;
@@ -216,6 +221,10 @@ int save_user_entity(user_entity_desc *desc)
                     return -1;
                 }
                 save_data_offset(curr_storage_id,sizeof(int),&create_wire[curr_wire_offset_index],sizeof(create_wire_block)*(i-curr_wire_offset_index));
+                if(k > USER_BLOCK_MAX_STORAGE_ARRAY - 2)
+                {
+                    return -1;
+                }
                 root_block->create_wire_storage_id[k++] = curr_storage_id;
                 curr_storage_id = -1;
                 curr_wire_offset_index = i - 1;
@@ -229,10 +238,16 @@ int save_user_entity(user_entity_desc *desc)
                 return -1;
             }
             save_data_offset(curr_storage_id,sizeof(int),&create_wire[curr_wire_offset_index],sizeof(create_wire_block)*(i-curr_wire_offset_index));
+            if(k > USER_BLOCK_MAX_STORAGE_ARRAY - 2)
+            {
+                return -1;
+            }
             root_block->create_wire_storage_id[k++] = curr_storage_id;
         }
     }
     
+    root_block->base_info.used_wireway_num = k;
+
     /*collect attach point info*/
     curr_storage_id = -1;
     i  = 0;
@@ -263,6 +278,10 @@ int save_user_entity(user_entity_desc *desc)
                     return -1;
                 }
                 save_data_offset(curr_storage_id,sizeof(int),&attach_point[attach_point_offset_index],sizeof(attach_point_block)*(i-attach_point_offset_index));
+                if( k > USER_BLOCK_MAX_STORAGE_ARRAY - 2 )
+                {
+                    return -1;
+                }
                 root_block->attach_point_storage_id[k++] = curr_storage_id;
                 curr_storage_id = -1;
                 attach_point_offset_index = i - 1;
@@ -278,14 +297,157 @@ int save_user_entity(user_entity_desc *desc)
                 return -1;
             }
             save_data_offset(curr_storage_id,sizeof(int),&attach_point[attach_point_offset_index],sizeof(attach_point_block)*(i-attach_point_offset_index));
+            if(k > USER_BLOCK_MAX_STORAGE_ARRAY - 2 )
+            {
+                return -1 ;
+            }
             root_block->attach_point_storage_id[k++] = curr_storage_id;
         }
-
-
+        root_block->base_info.used_point_num = k;
+    }
     
+    save_data(root_storage_id,root_block,sizeof(user_entity_root_block));
+}
+
+user_entity_desc *load_user_entity(unsigned long entity_id)
+{
+    user_entity_root_block *root_block = NULL;
+    user_entity_desc *dsc = NULL;
+    char *key_name = NULL ,*name =  NULL ,*group_name = NULL;
+    root_block = read_data(entity_id);
+    
+    if(NULL == root_block)
+    {
+        return NULL;
+    }
+    
+    dsc = malloc(sizeof(user_entity_desc));
+    if(NULL== dsc)
+    {
+        return NULL;
+    }
+ 
+    /*load dsc name*/
+    key_name = read_data(root_block->base_info.name_id);
+    if(!key_name)
+    {
+        return NULL;
+    } 
+
+    name = malloc(root_block->base_info.user_name_len+1);
+    if(!name)
+    {
+        strncpy(name,key_name,root_block->base_info.user_name_len);
+    }
+    else
+    {
+        return NULL;
     }
 
+    key_name = key_name + root_block->base_info.user_name_len + 1;
+
+    group_name = malloc(root_block->base_info.group_name_len + 1);
+    if(group_name)
+    {
+        strncpy(group_name,key_name,root_block->base_info.group_name_len);
+    }    
+    else
+    {
+        return NULL;
+    }
+
+    /*load base info*/
+    dsc->state = root_block->base_info.state ;
+    dsc->name = name;
+    dsc->group_name = group_name;
+    dsc->state = root_block->base_info.state ;
+    dsc->name_id = root_block->base_info.name_id;
+    dsc->root_block_id = root_block->base_info.block_id;
+    dsc->user_token = root_block->base_info.user_token;
+    dsc->port_num = root_block->base_info.port_num;
+    dsc->relate_wireway_num = root_block->base_info.relate_wireway_num;
+    dsc->relate_point_num = root_block->base_info.relate_point_num;
+
+    /*load port num*/
+   // port_block_num = root_block->base_info.used_port_num;
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return NULL;
 }
+
+int load_port_num(user_entity_root_block *root_block,user_entity_desc *dsc)
+{
+    int port_num = root_block->base_info.used_port_num;
+    int obj_num = 0;
+    int offset = 0;
+    int i,j,k;
+    user_entity_content_block *block = NULL;
+    for(i = 0; i < port_num; i++)
+    {
+        block = read_data(root_block->port_storage_id[i]);
+        if(!block)
+        {
+            return -1;
+        }        
+        
+        obj_num = block->obj_num;
+        
+        for( j = 0 ; j < obj_num ; j++)
+        {
+            user_port_block *port_block = &block->content[offset];
+            user_logic_port *port = malloc(sizeof(user_logic_port));
+            if(!port)
+            {
+                return -1;
+            } 
+            INIT_LIST_HEAD(&port->list);
+            INIT_LIST_HEAD(&port->addr_list);
+            strcpy(port->port_name,port_block->port_name);
+            port->port_index = port_block->port_index;
+            port->port_type = port_block->port_type;
+            port->port_state = port_block->port_state;
+            port->addr_num  = port_block->addr_num;
+            
+            for( k = 0;k < port->addr_num ; k++)
+            {
+                user_port_addr_block *addr_block = &port_block->addr_block[k]; 
+                user_port_addr *addr = malloc(sizeof(user_port_addr));
+                if(!addr)
+                {
+                    return -1;
+                }                
+                addr->addr_type = addr_block->addr_type;
+                INIT_LIST_HEAD(&addr->list);
+                strcpy(addr->port_logic_addr.addr_string,addr_block->port_logic_addr.addr_string);
+                strcpy(addr->port_phy_addr.phy_addr_string,addr_block->port_phy_addr.phy_addr_string);
+                list_add(&port->addr_list,&addr->list);
+            }
+            
+            list_add(&dsc->port_list,&port->list);
+        }
+         
+    }
+
+
+}
+
+
 int assign_user_entity_token()
 {
     return 1;

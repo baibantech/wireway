@@ -2,7 +2,7 @@
 #define __user_entity__
 
 #define USER_BLOCK_CONTENT_LEN 1024
-#define USER_BLOCK_MAX_STRORAGE_ARRAY (1024-sizeof(int)*6-sizeof(user_entity_base_block))/(6*sizeof(unsigned long))
+#define USER_BLOCK_MAX_STORAGE_ARRAY (1024-sizeof(int)*6-sizeof(user_entity_base_block))/(6*sizeof(unsigned long))
 typedef  struct user_port_addr_block
 {
     int addr_type;
@@ -29,12 +29,14 @@ typedef struct user_entity_base_block
     unsigned long name_id;
     unsigned long block_id;
     unsigned long user_token;
+    int used_port_num;
+    int used_wireway_num;
+    int used_point_num;
 }user_entity_base_block;
 
 typedef struct user_port_base_block
 {
     int port_len;
-    int next_offset;
     char port_name[32];
     int port_index;
     int port_type;
@@ -65,14 +67,11 @@ typedef struct user_entity_content_block
 
 typedef struct user_entity_root_block
 {
-    int used_port_storage;
-    int used_create_wire_storage;
-    int used_attach_point_storage;
     user_entity_base_block base_info;
 
-    unsigned long port_storage_id[USER_BLOCK_MAX_STRORAGE_ARRAY];
-    unsigned long create_wire_storage_id[USER_BLOCK_MAX_STRORAGE_ARRAY];
-    unsigned long attach_point_storage_id[USER_BLOCK_MAX_STRORAGE_ARRAY];    
+    unsigned long port_storage_id[USER_BLOCK_MAX_STORAGE_ARRAY];
+    unsigned long create_wire_storage_id[USER_BLOCK_MAX_STORAGE_ARRAY];
+    unsigned long attach_point_storage_id[USER_BLOCK_MAX_STORAGE_ARRAY];    
 }user_entity_root_block;
 
 typedef struct reg_entity_req

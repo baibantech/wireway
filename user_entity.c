@@ -47,14 +47,13 @@ unsigned long prepare_reg_entity(reg_entity_req *req)
     {
         return -1;
     }   
-
+    free(key_name);
     return dsc->user_token;
 }
 
-
 user_entity_desc *reg_entity(reg_entity_req *req)
 {
-    
+        
 
 
 
