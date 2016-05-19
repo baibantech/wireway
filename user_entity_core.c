@@ -466,6 +466,53 @@ int load_entity_attach_point(user_entity_root_block *root_block,user_entity_desc
     return 0;
 }
 
+int load_port_content(user_entity_content_block  *block,user_entity_desc *dsc)
+{
+    int obj_num = 0;
+    int offset = 0;
+    int i,j,k;
+    if(!block)
+    {
+        return NULL;
+    }        
+        
+    obj_num = block->obj_num;
+        
+    for( j = 0 ; j < obj_num ; j++)
+    {
+        user_port_block *port_block = &block->content[offset];
+        user_logic_port *port = malloc(sizeof(user_logic_port));
+        if(!port)
+        {
+            return -1;
+        } 
+        INIT_LIST_HEAD(&port->list);
+        INIT_LIST_HEAD(&port->addr_list);
+        strcpy(port->port_name,port_block->port_name);
+        port->port_index = port_block->port_index;
+        port->port_type = port_block->port_type;
+        port->port_state = port_block->port_state;
+        port->addr_num  = port_block->addr_num;
+        offset = offset + port_block->port_len;
+        
+        for( k = 0;k < port->addr_num ; k++)
+        {
+            user_port_addr_block *addr_block = &port_block->addr_block[k]; 
+            user_port_addr *addr = malloc(sizeof(user_port_addr));
+            if(!addr)
+            {
+                return -1;
+            }                
+            addr->addr_type = addr_block->addr_type;
+            INIT_LIST_HEAD(&addr->list);
+            strcpy(addr->port_logic_addr.addr_string,addr_block->port_logic_addr.addr_string);
+            strcpy(addr->port_phy_addr.phy_addr_string,addr_block->port_phy_addr.phy_addr_string);
+            list_add(&port->addr_list,&addr->list);
+        }
+        list_add(&dsc->port_list,&port->list);
+    }       
+}
+         
 int load_entity_port(user_entity_root_block *root_block,user_entity_desc *dsc)
 {
     int port_block_num = root_block->base_info.used_port_num;
@@ -524,13 +571,14 @@ int load_entity_port(user_entity_root_block *root_block,user_entity_desc *dsc)
 }
 
 
+
 int assign_user_entity_token()
 {
     return 1;
 }
 
 
-int init_user_entity(user_entity_desc *desc,reg_entity_req *req)
+int init_user_entity(user_entity_desc *desc,entity_req *req)
 {
     int len;
     char *name = NULL;
@@ -575,7 +623,6 @@ int init_user_entity(user_entity_desc *desc,reg_entity_req *req)
     desc->relate_point_num = 0;
     INIT_LIST_HEAD(&desc->attach_point);
 
-    save_user_entity(desc);
 }
 void user_entity_tree_restore()
 {

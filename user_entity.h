@@ -74,7 +74,7 @@ typedef struct user_entity_root_block
     unsigned long attach_point_storage_id[USER_BLOCK_MAX_STORAGE_ARRAY];    
 }user_entity_root_block;
 
-typedef struct reg_entity_req
+typedef struct entity_req
 {
     int msg_type;
     char *name;
@@ -82,7 +82,7 @@ typedef struct reg_entity_req
     unsigned long reg_token;
     int msg_size;
     char content[0];
-}reg_entity_req;
+}entity_req;
 
 
 

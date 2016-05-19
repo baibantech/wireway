@@ -2,7 +2,7 @@
 #include "bptree.h"
 #include "wireway.h"
 
-unsigned long prepare_reg_entity(reg_entity_req *req)
+unsigned long prepare_reg_entity(entity_req *req)
 {
     int len = 0;
     int name_len , group_name_len = 0;
@@ -51,12 +51,46 @@ unsigned long prepare_reg_entity(reg_entity_req *req)
     return dsc->user_token;
 }
 
-user_entity_desc *reg_entity(reg_entity_req *req)
+int reg_entity(entity_req *req)
 {
+    int len = 0;
+    int name_len , group_name_len = 0;
+    char *key_name = NULL;
+    user_entity_desc *dsc = NULL;
+    int port_num = 0;
+    if(NULL == req || 0 == strlen(req->name)|| 0== strlen(req->group_name))
+    {
+        return -1;
+    }
+    name_len = strlen(req->name);
+    group_name_len = strlen(req->group_name);    
+
+    if(req->group_name[group_name_len-1]!= '#')
+    {
+        key_name = malloc(name_len + group_name_len+1);
+        if(NULL == key_name){
+            return -1;
+        } 
+        sprintf(key_name,"%s#%s",req->group_name,req->name);
+        dsc = lookup_user_entity(key_name);
+        if(!dsc)
+        {
+            return -1;
+        }
         
+        if(req->reg_token != dsc->user_token)
+        {
+            return -1;
+        }
 
+        /*parse port content*/
+        port_num = load_port_content(req->content,dsc);
+        if(-1 != port_num)
+        {
+            dsc->port_num = port_num;
+            return 0;
+        }
 
-
+    }
+    return -1;    
 }
-
-
