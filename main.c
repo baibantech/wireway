@@ -38,7 +38,10 @@ int main(int argc, char** argv) {
     while(1)  
     {  
         recvfrom(socket_descriptor,message,sizeof(message),0,(struct sockaddr *)&sin,&sin_len);  
-        printf("Response from server:%s\n",message);  
+
+        
+        printf("Response from server:%s\n",message); 
+ 
     }  
   
     close(socket_descriptor);  
