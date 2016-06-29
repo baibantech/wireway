@@ -95,12 +95,15 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_wireway_OBJECTS = main.$(OBJEXT) wireway_core.$(OBJEXT) \
+am_wireway_OBJECTS = main.$(OBJEXT) msg_queue.$(OBJEXT) \
+	thread_main.$(OBJEXT) wireway_core.$(OBJEXT) \
 	wireway_func.$(OBJEXT) bptree.$(OBJEXT) storage_sys.$(OBJEXT) \
 	bitmap.$(OBJEXT) bitops.$(OBJEXT) user_entity.$(OBJEXT) \
 	user_entity_core.$(OBJEXT) wireway_server.$(OBJEXT)
 wireway_OBJECTS = $(am_wireway_OBJECTS)
 wireway_LDADD = $(LDADD)
+wireway_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(wireway_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
 am__v_P_0 = false
@@ -262,7 +265,8 @@ target_alias =
 top_build_prefix = 
 top_builddir = .
 top_srcdir = ..
-wireway_SOURCES = main.c func.h wireway.h wireway_core.c wireway_func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c user_entity.c user_entity_core.c wireway_server.c
+wireway_SOURCES = main.c msg_queue.c thread_main.c  func.h wireway.h wireway_core.c wireway_func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c user_entity.c user_entity_core.c wireway_server.c
+wireway_LDFLAGS = -L usr/lib64  -pthread
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -362,7 +366,7 @@ clean-binPROGRAMS:
 
 wireway$(EXEEXT): $(wireway_OBJECTS) $(wireway_DEPENDENCIES) $(EXTRA_wireway_DEPENDENCIES) 
 	@rm -f wireway$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(wireway_OBJECTS) $(wireway_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(wireway_LINK) $(wireway_OBJECTS) $(wireway_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -374,7 +378,9 @@ include ./$(DEPDIR)/bitmap.Po
 include ./$(DEPDIR)/bitops.Po
 include ./$(DEPDIR)/bptree.Po
 include ./$(DEPDIR)/main.Po
+include ./$(DEPDIR)/msg_queue.Po
 include ./$(DEPDIR)/storage_sys.Po
+include ./$(DEPDIR)/thread_main.Po
 include ./$(DEPDIR)/user_entity.Po
 include ./$(DEPDIR)/user_entity_core.Po
 include ./$(DEPDIR)/wireway_core.Po
