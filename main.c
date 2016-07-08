@@ -10,9 +10,41 @@
 
 #include "user_entity.h"
  
-int port=6789;  
+int port=6789; 
+
+int init_deamon()
+{
+    int pid;
+    if(pid = fork())
+    {
+        exit(0);
+    }
+    else if(pid < 0)
+    {
+        exit(1);
+    }
+
+    setsid();
+    printf("deamon process run\r\n");
+
+} 
   
-int main(int argc, char** argv) {  
+int main(int argc,char** argv)
+{
+    
+    init_deamon();
+    printf("init socket \r\n");
+    while(1)
+    {
+        sleep(1);
+    }
+       
+    exit(0);
+    return 0;
+}
+
+
+int init_socket() {  
   
     int sin_len;  
   

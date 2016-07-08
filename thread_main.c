@@ -39,6 +39,29 @@ void entity_thread_init()
     
 }
 
+
+void entity_test_main()
+{
+
+    while(1)
+    {
+        sleep(10);
+    }
+
+}
+
+void entity_test_thread_init()
+{
+    pthread_t entity_tid;
+    int ret = 0;
+    ret = pthread_create(&entity_tid,NULL,entity_test_main,NULL);
+    if(ret)
+    {
+        printf("create test thread err\r\n");
+    }
+}
+
+
 void wireway_thread_init()
 {
     pthread_t wireway_tid;
