@@ -1,5 +1,10 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "user_entity.h"
+
 int  get_entity_thread_num()
 {
     return 1;
@@ -42,13 +47,35 @@ void entity_thread_init()
 
 void entity_test_main()
 {
+    int client_socket_fd = -1;
+    struct sockaddr_in server_addr;
+    entity_req *req = NULL;
+    char *msg = NULL;
 
-    while(1)
+    memset(&server_addr, 0,sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr("192.168.112.138");//local ip 
+    server_addr.sin_port = htons(6789);
+
+    /* 创建socket */
+    client_socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if(client_socket_fd < 0)
     {
-        sleep(10);
+        printf("create client socket err\r\n");
+        exit(1);
     }
 
+    req = construct_req(pre_reg,"test1","test",strlen("hello pre reg"),"hello pre reg");
+    if(!req)
+    {
+        exit(1);
+    }
+    
+    msg = serial_entity_req(req);
+
+    return client_socket_fd;
 }
+
 
 void entity_test_thread_init()
 {

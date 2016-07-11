@@ -2,6 +2,109 @@
 #include "bptree.h"
 #include "wireway.h"
 
+char *serial_entity_req(entity_req *req)
+{
+    int name_len,group_name_len;
+    int mem_len ;
+    char *serial_mem = NULL;
+    char *mem_tmp = NULL;
+    if(!req)
+    {
+        return NULL;
+    }
+    
+    name_len = strlen(req->name);
+    group_name_len = strlen(req->group_name);
+    if(0 == name_len || 0 == group_name_len)
+    {
+        return NULL;
+    } 
+    mem_len = name_len + group_name_len + req->msg_size + 4*sizeof(int) + sizeof(unsigned long);
+
+    serial_mem = malloc(mem_len);
+    if(NULL == serial_mem)
+    {
+        return NULL;
+    }    
+    
+    mem_tmp = serial_mem;
+    
+    *(int*)(mem_tmp) = req->msg_type;
+    mem_tmp += sizeof(int);
+
+    *(int*)(mem_tmp) = name_len;
+    mem_tmp += sizeof(int);
+
+    strcpy(mem_tmp,req->name);
+    mem_tmp += name_len;
+
+    *(int*)mem_tmp = group_name_len;
+    mem_tmp += sizeof(int);
+
+    strcpy(mem_tmp ,req->group_name);
+    mem_tmp += group_name_len;
+
+    *(unsigned long*)mem_tmp = req->reg_token;
+    mem_tmp += sizeof(unsigned long);
+
+    *(int*)mem_tmp = req->msg_size;
+    mem_tmp +=  sizeof(int);
+    
+    memcpy(mem_tmp,req->content,req->msg_size);
+    
+    return serial_mem;
+}
+
+
+int construct_req(int type,char *name,char *group_name,int size,char *content)
+{
+    int name_len,group_name_len;
+    int msg_len = sizeof(entity_req) + size;
+    if(NULL == name || NULL == group_name || NULL == content)
+    {
+        return -1;
+    } 
+         
+    name_len = strlen(name);
+    group_name_len = strlen(group_name); 
+    
+    if( 0 == name_len || 0 ==  group_name_len )
+    {
+        return -1;
+    }
+
+    entity_req *req = malloc(msg_len);
+    
+    if(NULL == req)
+    {
+        return -1;
+    }
+    
+    req->msg_type = type;
+    req->name = malloc(name_len +1);
+    if(NULL == req->name)
+    {
+        free(req);
+        return -1;
+    }
+    strcpy(req->name,name);
+    req->group_name = malloc(group_name +1);
+    
+    if(NULL == req->group_name)
+    {
+        free(req->name);
+        free(req);
+        return -1;
+    }
+
+    strcpy(req->group_name,group_name);
+
+    req->msg_size = size;
+    memcpy(req->content ,content,size);
+
+    return 0;
+}
+
 unsigned long prepare_reg_entity(entity_req *req)
 {
     int len = 0;

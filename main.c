@@ -42,9 +42,22 @@ int main(int argc,char** argv)
     exit(0);
     return 0;
 }
+int init_client_socket()
+{
+    #if 0
+    
+    if(sendto(client_socket_fd, buffer, BUFFER_SIZE,0,(struct sockaddr*)&server_addr,sizeof(server_addr)) < 0) 
+    { 
+        perror("Send File Name Failed:"); 
+        exit(1); 
+    } 
 
+    close(client_socket_fd); 
+    return 0;
+    #endif
+}
 
-int init_socket() {  
+int init_server_socket() {  
   
     int sin_len;  
   

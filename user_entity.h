@@ -3,6 +3,13 @@
 
 #define USER_BLOCK_CONTENT_LEN 1024
 #define USER_BLOCK_MAX_STORAGE_ARRAY (1024-sizeof(int)*6-sizeof(user_entity_base_block))/(6*sizeof(unsigned long))
+enum entity_req_type
+{
+    pre_reg,
+    reg,
+    add_port,
+};
+
 typedef  struct user_port_addr_block
 {
     int addr_type;
