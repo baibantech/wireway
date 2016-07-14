@@ -23,10 +23,41 @@ void entity_thread_main()
 }
 void wireway_thread_main()
 {
+    int sin_len;
 
+    int socket_descriptor;
+    struct sockaddr_in sin;
+    int message_len = sizeof(user_entity_content_block)+sizeof(entity_req);
+    char *message = malloc(message_len);
+    if(!message)
+    {
+        return -1;
+    }
+    memset(message,0,message_len);
 
+    bzero(&sin,sizeof(sin));
+    sin.sin_family=AF_INET;
+    sin.sin_addr.s_addr=htonl(INADDR_ANY);
+    sin.sin_port=htons(6789);
+    sin_len=sizeof(sin);
+
+    socket_descriptor=socket(AF_INET,SOCK_DGRAM,0);
+    bind(socket_descriptor,(struct sockaddr *)&sin,sizeof(sin));
+
+    while(1)
+    {
+        recvfrom(socket_descriptor,message,sizeof(message),0,(struct sockaddr *)&sin,&sin_len);
+
+        printf("Response from server\r\n");
+        memset(message,0,message_len);
+
+    }
+ 
+    close(socket_descriptor);
+    exit(0);    
 
 }
+
 void entity_thread_init()
 {
     pthread_t entity_tid;
@@ -51,12 +82,16 @@ void entity_test_main()
     struct sockaddr_in server_addr;
     entity_req *req = NULL;
     char *msg = NULL;
+    int msg_len = 0;
 
     memset(&server_addr, 0,sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = inet_addr("192.168.112.138");//local ip 
     server_addr.sin_port = htons(6789);
-
+    if(inet_pton(AF_INET,"127.0.0.1", &server_addr.sin_addr) == 0){
+        perror("Server IP Address Error:");
+        exit(1);
+    }
+ 
     /* 创建socket */
     client_socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
     if(client_socket_fd < 0)
@@ -68,12 +103,27 @@ void entity_test_main()
     req = construct_req(pre_reg,"test1","test",strlen("hello pre reg"),"hello pre reg");
     if(!req)
     {
-        exit(1);
+        pthread_exit(1);
     }
     
-    msg = serial_entity_req(req);
+    msg_len = serial_entity_req(req,&msg);
+    if(-1 == msg_len)
+    {
+        exit(1);
+    }
 
-    return client_socket_fd;
+    if(sendto(client_socket_fd, msg, msg_len,0,(struct sockaddr*)&server_addr,sizeof(server_addr)) < 0) 
+    { 
+        printf("Send File Name Failed:"); 
+        exit(1); 
+    } 
+
+    close(client_socket_fd);
+    while(1)
+    {
+        sleep(10);
+    }
+    
 }
 
 

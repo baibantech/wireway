@@ -97,6 +97,7 @@ unsigned long get_user_entity_key(void *data);
 unsigned long get_user_entity_data(void *data);
 unsigned long alloc_user_bptree_block();
 unsigned long alloc_user_entity_block();
+entity_req *construct_req(int type,char *name,char *group_name,int size,char *content);
 
 
 

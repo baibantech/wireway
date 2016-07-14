@@ -148,6 +148,7 @@ ac_fn_c_check_header_mongrel	configure	/^ac_fn_c_check_header_mongrel ()$/;"	f
 ac_fn_c_try_compile	configure	/^ac_fn_c_try_compile ()$/;"	f
 ac_fn_c_try_cpp	configure	/^ac_fn_c_try_cpp ()$/;"	f
 ac_fn_c_try_run	configure	/^ac_fn_c_try_run ()$/;"	f
+add_port	user_entity.h	/^    add_port,$/;"	e	enum:entity_req_type
 addr	user_entity.h	/^        unsigned long addr;$/;"	m	union:user_port_addr_block::__anon5
 addr	wireway.h	/^            int addr;$/;"	m	struct:point_desc_block::__anon3::point_block_peer
 addr	wireway.h	/^        unsigned long addr;$/;"	m	union:user_port_addr::__anon1
@@ -295,6 +296,7 @@ clz32	bitops.h	/^static inline int clz32(uint32_t val)$/;"	f
 clz64	bitops.h	/^static inline int clz64(uint64_t val)$/;"	f
 clzl	bitops.h	123;"	d
 coalesce_nodes	bptree.c	/^node *coalesce_nodes(node *root, node *nd, node *neighbor, int nd_index)$/;"	f
+construct_req	user_entity.c	/^int construct_req(int type,char *name,char *group_name,int size,char *content)$/;"	f
 container_of	list.h	12;"	d
 content	user_entity.h	/^    char content[0];$/;"	m	struct:entity_req
 content	user_entity.h	/^    char content[USER_BLOCK_CONTENT_LEN];$/;"	m	struct:user_entity_content_block
@@ -332,7 +334,9 @@ dvidir	build/Makefile	/^dvidir = ${docdir}$/;"	m
 enqueue	bptree.c	/^void enqueue(queue *q, node *nd)$/;"	f
 entity_req	user_entity.h	/^typedef struct entity_req$/;"	s
 entity_req	user_entity.h	/^}entity_req;$/;"	t	typeref:struct:entity_req
+entity_req_type	user_entity.h	/^enum entity_req_type$/;"	g
 entity_test_main	thread_main.c	/^void entity_test_main()$/;"	f
+entity_test_thread_init	thread_main.c	/^void entity_test_thread_init()$/;"	f
 entity_thread_init	thread_main.c	/^void entity_thread_init()$/;"	f
 entity_thread_main	thread_main.c	/^void entity_thread_main()$/;"	f
 exec_prefix	build/Makefile	/^exec_prefix = ${prefix}$/;"	m
@@ -407,7 +411,6 @@ index	wireway.h	/^    int index;$/;"	m	struct:joint_point_tag
 index	wireway.h	/^    int index;$/;"	m	struct:point_desc_block
 index	wireway.h	/^    int index;$/;"	m	struct:point_tag
 infodir	build/Makefile	/^infodir = ${datarootdir}\/info$/;"	m
-init_client_socket	main.c	/^int init_client_socket()$/;"	f
 init_deamon	main.c	/^int init_deamon()$/;"	f
 init_queue	bptree.c	/^queue *init_queue(int capacity)$/;"	f
 init_server_socket	main.c	/^int init_server_socket() {  $/;"	f
@@ -594,6 +597,7 @@ port_state	wireway.h	/^    int port_state;$/;"	m	struct:user_logic_port_tag
 port_storage_id	user_entity.h	/^    unsigned long port_storage_id[USER_BLOCK_MAX_STORAGE_ARRAY];$/;"	m	struct:user_entity_root_block
 port_type	user_entity.h	/^    int port_type;$/;"	m	struct:user_port_base_block
 port_type	wireway.h	/^    int port_type;$/;"	m	struct:user_logic_port_tag
+pre_reg	user_entity.h	/^    pre_reg,$/;"	e	enum:entity_req_type
 prefetch	list.h	5;"	d
 prefix	build/Makefile	/^prefix = \/usr\/local$/;"	m
 prepare_reg_entity	user_entity.c	/^unsigned long prepare_reg_entity(entity_req *req)$/;"	f
@@ -619,6 +623,7 @@ queue_handle	msg_queue.h	/^    que_handle  queue_handle;$/;"	m	struct:msg_queue_
 queue_len	msg_queue.h	/^    int  queue_len;$/;"	m	struct:msg_queue_dsc
 read_data	storage_sys.c	/^void *read_data(unsigned long  storage_id)$/;"	f
 rear	bptree.h	/^    int rear;$/;"	m	struct:queue
+reg	user_entity.h	/^    reg,$/;"	e	enum:entity_req_type
 reg_entity	user_entity.c	/^int reg_entity(entity_req *req)$/;"	f
 reg_storage_buddy_system	storage_sys.c	/^int reg_storage_buddy_system(char *buddy_name,char order_array[] ,int order_num)$/;"	f
 reg_storage_zone	storage_sys.c	/^int reg_storage_zone(char *zone_name,int zone_type,int block_size,int per_media_count)$/;"	f
@@ -650,6 +655,7 @@ save_user_entity	user_entity_core.c	/^int save_user_entity(user_entity_desc *des
 save_wireway	wireway_func.c	/^int save_wireway(wireway *srcw)$/;"	f
 save_wireway_block	storage_sys.c	/^void save_wireway_block(wireway_block *block)$/;"	f
 sbindir	build/Makefile	/^sbindir = ${exec_prefix}\/sbin$/;"	m
+serial_entity_req	user_entity.c	/^char *serial_entity_req(entity_req *req)$/;"	f
 set_base_from	depcomp	/^set_base_from ()$/;"	f
 set_bit	bitops.h	/^static inline void set_bit(int nr, unsigned long *addr)$/;"	f
 set_bptree_root_id	storage_sys.c	/^void set_bptree_root_id(unsigned long root_id,unsigned long zone_id)$/;"	f
@@ -788,6 +794,7 @@ wireway_id	wireway.h	/^    unsigned long wireway_id;$/;"	m	struct:wireway_block
 wireway_name_id	user_entity.h	/^    unsigned long wireway_name_id;$/;"	m	struct:attach_point_desc
 wireway_name_id	user_entity.h	/^    unsigned long wireway_name_id;$/;"	m	struct:create_wire_desc
 wireway_tag	wireway.h	/^typedef struct wireway_tag$/;"	s
+wireway_thread_init	thread_main.c	/^void wireway_thread_init()$/;"	f
 wireway_thread_main	thread_main.c	/^void wireway_thread_main()$/;"	f
 wireway_tree_control	wireway_func.c	/^tree_root wireway_tree_control = {$/;"	v
 wireway_tree_empty	wireway_func.c	/^int wireway_tree_empty()$/;"	f
