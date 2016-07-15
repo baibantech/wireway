@@ -24,16 +24,17 @@ void entity_thread_main()
 void wireway_thread_main()
 {
     int sin_len;
-
+    int i = 0 ;
     int socket_descriptor;
     struct sockaddr_in sin;
     int message_len = sizeof(user_entity_content_block)+sizeof(entity_req);
+    int ret = 0;
     char *message = malloc(message_len);
     if(!message)
     {
         return -1;
     }
-    memset(message,0,message_len);
+    memset(message,0xFF,message_len);
 
     bzero(&sin,sizeof(sin));
     sin.sin_family=AF_INET;
@@ -46,9 +47,23 @@ void wireway_thread_main()
 
     while(1)
     {
-        recvfrom(socket_descriptor,message,sizeof(message),0,(struct sockaddr *)&sin,&sin_len);
+        ret = recvfrom(socket_descriptor,message,message_len,0,(struct sockaddr *)&sin,&sin_len);
 
-        printf("Response from server\r\n");
+        printf("recv msg\r\n");
+        printf("msg Len is %d\r\n",ret);
+        printf("receive from %s\r\n" , inet_ntoa(sin.sin_addr));
+        
+        while(i < 12)
+        {
+            if(0 == i%4)
+            {
+                printf("\r\n");
+            }
+            printf("0x%08x ",*(int*)message);
+            message += sizeof(int);
+            i++;
+        }        
+
         memset(message,0,message_len);
 
     }
@@ -83,11 +98,13 @@ void entity_test_main()
     entity_req *req = NULL;
     char *msg = NULL;
     int msg_len = 0;
-
+    int ret = 0;
+    int i = 0;
+    int try_times = 3;
     memset(&server_addr, 0,sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(6789);
-    if(inet_pton(AF_INET,"127.0.0.1", &server_addr.sin_addr) == 0){
+    if(inet_pton(AF_INET,"192.168.112.138", &server_addr.sin_addr) == 0){
         perror("Server IP Address Error:");
         exit(1);
     }
@@ -111,13 +128,15 @@ void entity_test_main()
     {
         exit(1);
     }
-
-    if(sendto(client_socket_fd, msg, msg_len,0,(struct sockaddr*)&server_addr,sizeof(server_addr)) < 0) 
+    while(i < try_times) {
+    if((ret =sendto(client_socket_fd, msg, msg_len,0,(struct sockaddr*)&server_addr,sizeof(server_addr))) < 0) 
     { 
         printf("Send File Name Failed:"); 
         exit(1); 
     } 
-
+    printf("send msg byte %d\r\n",ret);
+    i++;
+    }
     close(client_socket_fd);
     while(1)
     {
