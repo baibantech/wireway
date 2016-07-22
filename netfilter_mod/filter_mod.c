@@ -37,52 +37,63 @@ int (*okfn) (struct sk_buff *))
  return NF_ACCEPT;  
 } 
 
-static unsigned int local_in_func(unsigned int hooknum,struct sk_buff *skb,
-const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_buff*))
+int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port)
 {
-    __be32 sip,dip;
-    struct in_ifaddr *ifa;
-    struct in_device *in_dev;
+    if(NULL ==  skb || NULL == in)
+    {
+        return 1;
+    }    
+    
+    struct sk_buff *sb = skb;
+    struct iphdr *iph = ip_hdr(sb);
     struct udphdr *uhdr = NULL;
-
-    if(skb){
-        struct sk_buff *sb = skb;
-        struct iphdr *iph = ip_hdr(sb);
-        dip = iph->daddr;
-        sip = iph->saddr;
-        printk("ip protocol is %d\r\n",iph->protocol);
-        if(IPPROTO_UDP == iph->protocol)
-        {
-            uhdr = udp_hdr(sb);
-            rcu_read_lock();
-            if ((in_dev = __in_dev_get_rcu(in)) == NULL) {
-                rcu_read_unlock();
-                return NF_ACCEPT;
-            }
-
-            for (ifa = in_dev->ifa_list; ifa; ifa = ifa->ifa_next) {
-                if(ifa->ifa_address == dip)
-                {
-                    printk("device addr is 0x%x\r\n",ifa->ifa_address);
-                    if(ntohs(uhdr->dest) == 6789)
-                    {
-                        printk("recv port 6789 packet\r\n");
-                    }
-                } 
-            
-            }
-
+    __be32 dip,sip;
+    struct in_device *in_dev;
+    struct in_ifaddr *ifa;
+    dip = iph->daddr;
+    sip = iph->saddr;
+    
+    if(IPPROTO_UDP == iph->protocol)
+    {
+        uhdr = udp_hdr(sb);
+        rcu_read_lock();
+        if ((in_dev = __in_dev_get_rcu(in)) == NULL) {
             rcu_read_unlock();
-                
+            return NF_ACCEPT;
         }
-    }
 
-    return NF_ACCEPT;
+        for (ifa = in_dev->ifa_list; ifa; ifa = ifa->ifa_next) {
+            if(ntohl(ifa->ifa_address) == ntohl(dip))
+            {
+                printk("device addr is 0x%x\r\n",ntohl(ifa->ifa_address));
+                if(ntohs(uhdr->dest) == port)
+                {
+                    rcu_read_unlock();
+                    return 0;
+                }
+            } 
+        
+        }
+
+        rcu_read_unlock();
+            
+    }
+    return 1;
 }
 
 
 
- 
+static unsigned int local_in_func(unsigned int hooknum,struct sk_buff *skb,
+const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_buff*))
+{
+    unsigned short local_port = 6789;
+    if(0 == is_udp_local_packet(skb,in,local_port))
+    {
+        printk("recv port %d packet\r\n",local_port);
+    }
+
+    return NF_ACCEPT;
+}
   
  struct nf_hook_ops sample_ops = {  
    .list =  {NULL,NULL},  

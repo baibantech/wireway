@@ -2,59 +2,20 @@
 #include "bptree.h"
 #include "wireway.h"
 
-char *serial_entity_req(entity_req *req,char **msg)
+void print_entity_req(entity_req *req)
 {
-    int name_len,group_name_len;
-    int mem_len ;
-    char *serial_mem = NULL;
-    char *mem_tmp = NULL;
-    if(!req || !msg)
+    if(req)
     {
-        return -1;
+        printf("req msg_type is %d\r\n",req->msg_type);
+        printf("req entity name %s\r\n",req->name);
+        printf("req entity group_name %s\r\n",req->group_name);
+        printf("req reg_token is 0x%llx\r\n",req->reg_token);
+        printf("req msg_size is %d\r\n",req->msg_size);
+        return ;
     }
-    
-    name_len = strlen(req->name);
-    group_name_len = strlen(req->group_name);
-    if(0 == name_len || 0 == group_name_len)
-    {
-        return -1;
-    } 
-    mem_len = name_len + group_name_len + req->msg_size + 4*sizeof(int) + sizeof(unsigned long);
-
-    serial_mem = malloc(mem_len);
-    if(NULL == serial_mem)
-    {
-        return -1;
-    }    
-    
-    mem_tmp = serial_mem;
-    
-    *(int*)(mem_tmp) = req->msg_type;
-    mem_tmp += sizeof(int);
-
-    *(int*)(mem_tmp) = name_len;
-    mem_tmp += sizeof(int);
-
-    strcpy(mem_tmp,req->name);
-    mem_tmp += name_len;
-
-    *(int*)mem_tmp = group_name_len;
-    mem_tmp += sizeof(int);
-
-    strcpy(mem_tmp ,req->group_name);
-    mem_tmp += group_name_len;
-
-    *(unsigned long*)mem_tmp = req->reg_token;
-    mem_tmp += sizeof(unsigned long);
-
-    *(int*)mem_tmp = req->msg_size;
-    mem_tmp +=  sizeof(int);
-    
-    memcpy(mem_tmp,req->content,req->msg_size);
-    *msg = serial_mem;
-    return mem_len;
+    printf("req is NULL \r\n");
+    return;
 }
-
 
 entity_req *construct_req(int type,char *name,char *group_name,int size,char *content)
 {
