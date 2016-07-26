@@ -1,4 +1,4 @@
-obj-m := filter_mod.o  
+obj-m := filter_mod.o wireway_dev.o 
     KERNELBUILD :=/lib/modules/$(shell uname -r)/build  
 default:
 	make -C $(KERNELBUILD) M=$(shell pwd) modules  
