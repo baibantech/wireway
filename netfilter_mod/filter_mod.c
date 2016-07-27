@@ -114,12 +114,14 @@ struct nf_hook_ops local_in_ops = {
   
 static int __init filter_init(void) {  
   nf_register_hook(&local_in_ops);
-  nf_register_hook(&sample_ops);  
+  nf_register_hook(&sample_ops); 
+  wireway_dev_init(); 
   return 0;  
 }  
   
   
-static void __exit filter_exit(void) {  
+static void __exit filter_exit(void) { 
+    wireway_dev_exit(); 
   nf_unregister_hook(&sample_ops);
   nf_unregister_hook(&local_in_ops);  
 }  
