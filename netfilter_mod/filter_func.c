@@ -9,7 +9,8 @@
 #include <linux/skbuff.h>  
 #include <linux/netfilter_ipv4.h>  
 #include <linux/inet.h>  
-#include <linux/inetdevice.h>  
+#include <linux/inetdevice.h> 
+#include "wireway_dev.h" 
 MODULE_LICENSE("GPL");  
 #define NIPQUAD(addr) \  
   ((unsigned char *)&addr)[0], \  

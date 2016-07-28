@@ -3,6 +3,7 @@
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
+#include <linux/slab.h>
 
 dev_t wireway_dev;
 int dev_major = 0,dev_minor = 0;
@@ -43,6 +44,7 @@ int wireway_dev_init(void)
 {
     int result ;
     dev_t devno = MKDEV(dev_major,0);
+    printk("hello wireway dev init\r\n");
     if(dev_major)
     {
         result = register_chrdev_region(devno,1,"wireway_dev");
@@ -66,13 +68,15 @@ int wireway_dev_init(void)
     wireway_cdev->owner = THIS_MODULE;
     wireway_cdev->ops = &wireway_dev_fops;
     
+    #if 1
     result = cdev_add(wireway_cdev,MKDEV(dev_major,0),1);
 
     if(result < 0)
     {
+        printk("cdev_add return err\r\n");
         return result;
     }
- 
+    #endif
 
     return 0;
 }
@@ -81,7 +85,7 @@ void wireway_dev_exit(void)
     unregister_chrdev_region(MKDEV(dev_major,0),1);
     if(wireway_cdev)
     {
-        cdev_del(wireway_cdev);        
+        kfree(wireway_cdev);        
     }
 
     return;
