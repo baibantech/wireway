@@ -25,7 +25,16 @@ static size_t wireway_dev_write(struct file *filp,const char __user *buf,size_t 
 
 int wireway_dev_ioctl(struct file *filp,unsigned int cmd,unsigned long args)
 {
+    switch(cmd)
+    {
+        case WIREWAY_IOC_CREATE_WIREWAY:
+            
+             
+            
+            break;
 
+        default : printk("error cmd number\r\n");break;
+    }
     return 0;
 
 }
@@ -78,6 +87,11 @@ int wireway_dev_init(void)
     }
     #endif
 
+    /*need reg self user entity*/
+     
+
+
+
     return 0;
 }
 void wireway_dev_exit(void)
@@ -85,7 +99,7 @@ void wireway_dev_exit(void)
     unregister_chrdev_region(MKDEV(dev_major,0),1);
     if(wireway_cdev)
     {
-        kfree(wireway_cdev);        
+        cdev_del(wireway_cdev);        
     }
 
     return;
