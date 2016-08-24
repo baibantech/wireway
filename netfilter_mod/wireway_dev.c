@@ -4,10 +4,12 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/slab.h>
+#include "wireway_dev.h"
 
 dev_t wireway_dev;
 int dev_major = 0,dev_minor = 0;
 struct cdev *wireway_cdev = NULL;
+extern void print_netdevice_info(void);
 
 int wireway_dev_open(struct inode *inode,struct file *filp)
 {
@@ -27,7 +29,7 @@ int wireway_dev_ioctl(struct file *filp,unsigned int cmd,unsigned long args)
 {
     switch(cmd)
     {
-        case WIREWAY_IOC_CREATE_WIREWAY:
+        case WIREWAY_IOC_CREATE_WIRE:
             
              
             
@@ -88,7 +90,7 @@ int wireway_dev_init(void)
     #endif
 
     /*need reg self user entity*/
-     
+    print_netdevice_info();     
 
 
 

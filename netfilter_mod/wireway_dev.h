@@ -10,6 +10,14 @@
 
 
 
+#define NIPQUAD(addr) \  
+  ((unsigned char *)&addr)[0], \
+  ((unsigned char *)&addr)[1], \
+  ((unsigned char *)&addr)[2], \
+  ((unsigned char *)&addr)[3]
+
+
+
 struct wireway_dev_data
 {
     unsigned int nr;

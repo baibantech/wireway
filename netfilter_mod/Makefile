@@ -1,5 +1,5 @@
 obj-m := wireway.o 
-wireway-y = filter_func.o wireway_dev.o
+wireway-y = filter_func.o wireway_dev.o netdevice_check.o
     KERNELBUILD :=/lib/modules/$(shell uname -r)/build  
 default:
 	make -C $(KERNELBUILD) M=$(shell pwd) modules  
