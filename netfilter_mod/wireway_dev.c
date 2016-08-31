@@ -10,7 +10,9 @@ dev_t wireway_dev;
 int dev_major = 0,dev_minor = 0;
 struct cdev *wireway_cdev = NULL;
 extern void print_netdevice_info(void);
-
+extern void kernel_udp_sock_test(struct net *net);
+extern void kernel_udp_sock_realse(void);
+extern int send_udp_packet_test(void);
 int wireway_dev_open(struct inode *inode,struct file *filp)
 {
     return 0;
@@ -90,10 +92,10 @@ int wireway_dev_init(void)
     #endif
 
     /*need reg self user entity*/
-    print_netdevice_info();     
-
-
-
+    //print_netdevice_info();     
+    //kernel_udp_sock_test(NULL);
+    //kernel_udp_sock_realse();
+    send_udp_packet_test();
     return 0;
 }
 void wireway_dev_exit(void)
