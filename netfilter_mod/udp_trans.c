@@ -10,6 +10,82 @@
 #include <net/inet_hashtables.h>
 #include <net/route.h>
 #include <net/ip.h>
+#define udp_trans_wait_time 0x0FFFF
+
+struct udp_trans_wait_queue_head
+{
+    spinlock_t lock;
+    struct list_head waitor_list;
+};
+
+struct udp_trans_waitor
+{
+    struct list_head waitor_list;
+    int key;
+    void *reply;
+    void *priv;  
+};
+
+struct udp_trans_wait_queue_head wait_queue = {
+    .lock = __SPIN_LOCK_UNLOCKED(wait_queue.lock),
+    .waitor_list = {&wait_queue.waitor_list,&wait_queue.waitor_list}
+};
+
+void* udp_trans_wait(int key,unsigned long time_out)
+{
+    unsigned long flags;
+    struct udp_trans_waitor waitor;
+    struct udp_trans_waitor *pos = NULL;
+    int time  = 0;
+    INIT_LIST_HEAD(&waitor.waitor_list);
+    waitor.key = key;
+    waitor.priv = (void*)current;
+    waitor.reply = NULL;
+    spin_lock_irqsave(&wait_queue.lock,flags);
+    list_for_each_entry(pos,&wait_queue.waitor_list,waitor_list) /*if list is null do not entor loop*/
+    {
+        if(pos->key < key)
+        {
+            continue;
+        }
+        break;
+    }
+        
+    list_add(&waitor.waitor_list,&pos->waitor_list);
+    set_current_state(TASK_UNINTERRUPTIBLE);
+    spin_unlock_irqrestore(&wait_queue.lock,flags);
+    time = schedule_timeout(time_out);
+    
+    spin_lock_irqsave(&wait_queue.lock,flags);
+    if(list_empty_careful(&waitor.waitor_list))
+    {
+        list_del_init(&waitor.waitor_list);
+    }
+    spin_unlock_irqrestore(&wait_queue.lock,flags);
+     
+    return waitor.reply;
+}
+
+int udp_trans_wake(int key,void *msg)
+{
+    unsigned long flags;
+    struct udp_trans_waitor *pos = NULL;
+    spin_lock_irqsave(&wait_queue.lock,flags);
+    list_for_each_entry(pos,&wait_queue.waitor_list,waitor_list) /*if list is null do not entor loop*/
+    {
+        if(pos->key == key)
+        {
+            wake_up_process(pos->priv);
+        }
+        break;
+    }
+ 
+
+
+
+}
+
+
 
 extern struct net init_net; //sock kern net namespace
 struct socket *sock = NULL;
@@ -93,10 +169,13 @@ int send_udp_packet_no_fagment(struct net *net,int dst_ip,short dst_port ,char *
     struct flowi4 fl4_stack;
     struct flowi4 *fl4 ;
     struct sk_buff *skb;  
-    int total_len, eth_len, ip_len, udp_len, header_len;  
+    int total_len, eth_len, ip_len, udp_len, header_len;
+    int hh_len ;
+    int mtu;  
     struct udphdr *udph;  
     struct iphdr *iph;   
     int local_ip;  
+    struct net_device *dev;
     short local_port = 6789;
     
     if(NULL == net)
@@ -114,21 +193,30 @@ int send_udp_packet_no_fagment(struct net *net,int dst_ip,short dst_port ,char *
         return -1;        
     }
     local_ip = ntohl(fl4->saddr);
-    printk("loca_ip is 0x%x\r\n",local_ip); 
+    dev = rt->dst.dev;
+    //printk("loca_ip is 0x%x\r\n",local_ip);
+    hh_len = LL_RESERVED_SPACE(dev); 
     // 设置各个协议数据长度  
     udp_len = len + sizeof(*udph);  
     ip_len = eth_len = udp_len + sizeof(*iph);  
-    total_len = eth_len + ETH_HLEN + NET_IP_ALIGN;  
+    total_len = eth_len + hh_len;  
     header_len = total_len - len;
+
+    printk("ETH_HLEN is %d,NET_IP_ALIGN is %d\r\n",ETH_HLEN,NET_IP_ALIGN);
+
+    printk("net device ll head len is %d\r\n",LL_RESERVED_SPACE(dev));
+    
+    printk("rt dst header len is %d\r\n",rt->dst.header_len);
+    printk("LL_MAX_HEADER is %d\r\n",LL_MAX_HEADER);
     // 分配skb  
-    skb = alloc_skb( total_len + LL_MAX_HEADER, GFP_ATOMIC );  
+    skb = alloc_skb( total_len + 15, GFP_ATOMIC );  
     if ( !skb ) {  
         printk( "alloc_skb fail./n" );  
         return -1 ;  
     }  
   
     // 预先保留skb的协议首部长度大小  
-    skb_reserve( skb, LL_MAX_HEADER + header_len );  
+    skb_reserve( skb, 15 + header_len );  
   
     // 拷贝负载数据  
     skb_copy_to_linear_data(skb, msg, len);  
@@ -185,7 +273,7 @@ int send_udp_packet_no_fagment(struct net *net,int dst_ip,short dst_port ,char *
     memcpy(eth->h_dest, remote_mac, ETH_ALEN); 
      
     */  
-       
+    udp_trans_wait(1,10);       
   
 free_skb:  
     printk( "free skb./n" );  
