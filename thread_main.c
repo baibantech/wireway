@@ -272,7 +272,7 @@ void entity_test_main()
     int msg_len = 0;
     int ret = 0;
     int i = 0;
-    int try_times = 1;
+    int try_times = 0;
     memset(&server_addr, 0,sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(6789);
