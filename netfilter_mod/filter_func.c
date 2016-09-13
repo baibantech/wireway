@@ -77,15 +77,28 @@ int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short
     return 1;
 }
 
-
-
 static unsigned int local_in_func(unsigned int hooknum,struct sk_buff *skb,
 const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_buff*))
 {
     unsigned short local_port = 6789;
+    char type;
+    struct wireway_msg_head *p = NULL;
+    struct udp_trans_wait_queue_head  *head = NULL; 
     if(0 == is_udp_local_packet(skb,in,local_port))
     {
         printk("recv port %d packet\r\n",local_port);
+        #if 1
+        p = (struct wireway_msg_head*)(skb->data);
+        
+        head = get_wait_queue_head(p->wireway_id,p->type);
+        if(!head)
+        {
+           
+        }
+        else {
+            udp_trans_wake(head,p->key,skb); 
+        }
+        #endif               
     }
 
     return NF_ACCEPT;

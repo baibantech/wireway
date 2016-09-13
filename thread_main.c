@@ -11,7 +11,37 @@
 #else
 
 #endif
+#define wireway_msg_data 1
+#define wireway_msg_reply 2
+#define wireway_msg_data_with_reply 4
+struct wireway_msg_head
+{
+    char type;
+    unsigned long key;
+    unsigned long wireway_id;
+};
 
+int  construct_reply_msg(unsigned long key,unsigned long wireway_id, char **msg)
+{
+    char *reply = "reply msg";
+    struct wireway_msg_head *head = NULL;
+    int msg_len = sizeof(struct wireway_msg_head)+ strlen(reply) + 1 ;
+    char *tmp = malloc(msg_len);
+    if(NULL == tmp)
+    {
+        *msg = NULL;
+        return 0;
+    }   
+    head = (struct wireway_msg_head *)tmp;
+    head->type = wireway_msg_reply;
+    head->key = key;
+    head->wireway_id = wireway_id;
+    head += 1;
+    strcpy((char*)head,reply);
+    *msg = tmp;
+    return msg_len;    
+
+}
 
 
 int serial_entity_req(entity_req *req,char **msg)
@@ -170,6 +200,8 @@ void wireway_thread_main()
     int message_len = sizeof(user_entity_content_block)+sizeof(entity_req);
     int ret = 0;
     entity_req *req;
+    char *reply = NULL;
+    struct wireway_msg_head *head;
     char *message = malloc(message_len);
     if(!message)
     {
@@ -194,8 +226,16 @@ void wireway_thread_main()
         printf("msg Len is %d\r\n",ret);
         printf("receive from %s\r\n" , inet_ntoa(sin.sin_addr));
         
+        #if 0
         req = deserial_entity_req(message,ret);
         free(req);
+        #endif
+        head = (struct wireway_msg_head*)message;
+        ret = construct_reply_msg(head->key,head->wireway_id,&reply); 
+        if(ret)
+        {
+            sendto(socket_descriptor, reply, ret,0,(struct sockaddr*)&sin,sin_len);
+        } 
         memset(message,0,message_len);
 
     }
