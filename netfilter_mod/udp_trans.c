@@ -78,6 +78,7 @@ int udp_trans_wake(struct udp_trans_wait_queue_head *head,    unsigned long key,
     spin_lock_irqsave(&head->lock,flags);
     list_for_each_entry(pos,&head->waitor_list,waitor_list) /*if list is null do not entor loop*/
     {
+        printk("get the wait task key is %d\r\n",key);
         if(pos->key == key)
         {
             pos->reply = msg;
@@ -282,7 +283,7 @@ int send_udp_packet_test(void)
 {
     int count ;
     char *buf = "hello world\r\n";
-    int dst_ip = 0xC0A80170;   
+    int dst_ip = 0xC0A8016B;   
     count = send_udp_packet_no_fagment(NULL, dst_ip,6789 ,buf,strlen(buf));
     return count;
 }

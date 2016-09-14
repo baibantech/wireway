@@ -88,8 +88,11 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
     {
         printk("recv port %d packet\r\n",local_port);
         #if 1
+        __skb_pull(skb,sizeof(struct iphdr)+sizeof(struct udphdr));
         p = (struct wireway_msg_head*)(skb->data);
-        
+        printk("wireway_id is 0x%llx\r\n",p->wireway_id);
+        printk("key  is 0x%llx\r\n",p->key);
+        printk("msg type is %d\r\n",p->type);
         head = get_wait_queue_head(p->wireway_id,p->type);
         if(!head)
         {
