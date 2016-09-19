@@ -12,7 +12,38 @@
 #include <linux/inetdevice.h> 
 #include "wireway_dev.h" 
 MODULE_LICENSE("GPL");  
-  
+DEFINE_PER_CPU(unsigned long long,timestamp_val);
+
+static unsigned long long rdtsc(void)
+{
+    unsigned int lo,hi;
+    asm volatile
+    (
+     "rdtsc":"=a"(lo),"=d"(hi)
+    );
+    return (unsigned long long)hi<<32|lo;
+}
+
+void record_timestamp(void)
+{
+    unsigned long long tmp = 0;
+    if(__get_cpu_var(timestamp_val) == 0)
+    {
+        __get_cpu_var(timestamp_val) = rdtsc();
+        printk("begin time stamp is %llx\r\n",__get_cpu_var(timestamp_val));
+    }
+    else
+    {
+        tmp = rdtsc();        
+        printk("next hook time sub is %llx\r\n",tmp-__get_cpu_var(timestamp_val));
+        __get_cpu_var(timestamp_val)= tmp;
+    }
+
+
+}
+
+
+ 
 static unsigned int sample(  
 unsigned int hooknum,  
 struct sk_buff * skb,  
@@ -20,7 +51,8 @@ const struct net_device *in,
 const struct net_device *out,  
 int (*okfn) (struct sk_buff *))  
 {  
-    __be32 sip,dip; 
+    __be32 sip,dip;
+    struct timeval stamp ; 
  if(skb){  
    struct sk_buff *sb = NULL;  
    sb = skb;  
@@ -29,6 +61,13 @@ int (*okfn) (struct sk_buff *))
    sip = iph->saddr;  
    dip = iph->daddr;  
    //printk("Packet for source address: %d.%d.%d.%d\n destination address: %d.%d.%d.%d\n ", NIPQUAD(sip), NIPQUAD(dip));  
+    skb_get_timestamp(skb,&stamp);
+    __get_cpu_var(timestamp_val) =0;
+    record_timestamp();
+    printk("pre routing skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);  
+
+
+
     }  
  return NF_ACCEPT;  
 } 
@@ -83,11 +122,20 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
     unsigned short local_port = 6789;
     char type;
     struct wireway_msg_head *p = NULL;
-    struct udp_trans_wait_queue_head  *head = NULL; 
+    struct udp_trans_wait_queue_head  *head = NULL;
+    struct timeval stamp ; 
+    skb_get_timestamp(skb,&stamp);
+    record_timestamp();
+    if(stamp.tv_sec != 0)
+    {
+        printk("local in pre skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec); 
+        stamp = ktime_to_timeval(ktime_get_real());
+        printk("local in over  skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);
+    } 
     if(0 == is_udp_local_packet(skb,in,local_port))
     {
         printk("recv port %d packet\r\n",local_port);
-        #if 1
+        #if 0
         __skb_pull(skb,sizeof(struct iphdr)+sizeof(struct udphdr));
         p = (struct wireway_msg_head*)(skb->data);
         printk("wireway_id is 0x%llx\r\n",p->wireway_id);
@@ -106,6 +154,21 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
 
     return NF_ACCEPT;
 }
+
+static unsigned int local_out_func(unsigned int hooknum,struct sk_buff *skb,
+const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_buff*))
+{
+
+    return NF_ACCEPT;
+}
+
+static unsigned int post_routing_func(unsigned int hooknum,struct sk_buff *skb,
+const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_buff*))
+{
+
+    return NF_ACCEPT;
+}
+
   
  struct nf_hook_ops sample_ops = {  
    .list =  {NULL,NULL},  
@@ -122,23 +185,48 @@ struct nf_hook_ops local_in_ops = {
     .hooknum = NF_INET_LOCAL_IN,
     .priority = NF_IP_PRI_FILTER+2
 
-}; 
-  
+};
+ 
+struct nf_hook_ops local_out_ops = {
+    .list = {NULL,NULL},
+    .hook = local_out_func,
+    .pf = PF_INET,
+    .hooknum = NF_INET_LOCAL_OUT,
+    .priority = NF_IP_PRI_FILTER+2
+
+};
+struct nf_hook_ops post_routing_ops = {
+    .list = {NULL,NULL},
+    .hook = post_routing_func,
+    .pf = PF_INET,
+    .hooknum = NF_INET_POST_ROUTING,
+    .priority = NF_IP_PRI_FILTER+2
+
+};
+
+
 static int __init filter_init(void) {  
-  nf_register_hook(&local_in_ops);
-  nf_register_hook(&sample_ops); 
-  wireway_dev_init(); 
+    __get_cpu_var(timestamp_val) = 0;
+    nf_register_hook(&local_in_ops);
+    nf_register_hook(&sample_ops);
+    nf_register_hook(&local_out_ops);
+    nf_register_hook(&post_routing_ops);
+
+    //wireway_dev_init(); 
   return 0;  
 }  
   
   
 static void __exit filter_exit(void) { 
-    wireway_dev_exit(); 
-  nf_unregister_hook(&sample_ops);
-  nf_unregister_hook(&local_in_ops);  
+    //wireway_dev_exit();
+  
+    nf_unregister_hook(&post_routing_ops);
+    nf_unregister_hook(&local_out_ops); 
+    nf_unregister_hook(&sample_ops);
+    nf_unregister_hook(&local_in_ops);  
 }  
   
  module_init(filter_init);  
  module_exit(filter_exit);   
- MODULE_AUTHOR("chenkangrui");  
+ MODULE_AUTHOR("lijiyong");  
  MODULE_DESCRIPTION("netfilter_mod");  
