@@ -70,11 +70,14 @@ int (*okfn) (struct sk_buff *))
    sip = iph->saddr;  
    dip = iph->daddr;  
    //printk("Packet for source address: %d.%d.%d.%d\n destination address: %d.%d.%d.%d\n ", NIPQUAD(sip), NIPQUAD(dip));  
-    skb_get_timestamp(skb,&stamp);
-    __get_cpu_var(timestamp_val) =0;
-    record_timestamp();
-    printk("pre routing skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);  
+    if(IPPROTO_UDP == iph->protocol)
+    {
 
+        skb_get_timestamp(skb,&stamp);
+        __get_cpu_var(timestamp_val) =0;
+        record_timestamp();
+        printk("pre routing skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);  
+    }
 
 
     }  
@@ -132,14 +135,22 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
     char type;
     struct wireway_msg_head *p = NULL;
     struct udp_trans_wait_queue_head  *head = NULL;
-    struct timeval stamp ; 
-    skb_get_timestamp(skb,&stamp);
-    record_timestamp();
-    if(stamp.tv_sec != 0)
+    struct timeval stamp ;
+    struct iphdr *iph;
+    iph  = ip_hdr(skb);
+
+
+    if(IPPROTO_UDP == iph->protocol) 
     {
-        printk("local in pre skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec); 
-        stamp = ktime_to_timeval(ktime_get_real());
-        printk("local in over  skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);
+
+        skb_get_timestamp(skb,&stamp);
+        record_timestamp();
+        if(stamp.tv_sec != 0)
+        {
+            printk("local in pre skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec); 
+            stamp = ktime_to_timeval(ktime_get_real());
+            printk("local in over  skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);
+        }
     } 
     if(0 == is_udp_local_packet(skb,in,local_port))
     {
