@@ -27,6 +27,8 @@ static unsigned long long rdtsc(void)
 void record_timestamp(void)
 {
     unsigned long long tmp = 0;
+    struct timeval stamp ;
+    unsigned long jiff = 0;
     if(__get_cpu_var(timestamp_val) == 0)
     {
         __get_cpu_var(timestamp_val) = rdtsc();
@@ -34,7 +36,14 @@ void record_timestamp(void)
     }
     else
     {
-        tmp = rdtsc();        
+        tmp = rdtsc();  
+        //jiffies_to_timeval(clock_t_to_jiffies(tmp-__get_cpu_var(timestamp_val)),&stamp);
+        //printk(" timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);
+        jiff = clock_t_to_jiffies(tmp-__get_cpu_var(timestamp_val)) ;
+        printk("jiff is %llx\r\n",jiff);
+        
+        printk("ten msec is %d jiff \r\n",msecs_to_jiffies(10));
+             
         printk("next hook time sub is %llx\r\n",tmp-__get_cpu_var(timestamp_val));
         __get_cpu_var(timestamp_val)= tmp;
     }
@@ -203,7 +212,22 @@ struct nf_hook_ops post_routing_ops = {
     .priority = NF_IP_PRI_FILTER+2
 
 };
+void list_nf_hook(int prot)
+{
+    struct nf_hook_ops *elem;
+    int err;
+    int hook_num = 0;
 
+    for(hook_num = NF_INET_PRE_ROUTING ; hook_num < NF_INET_NUMHOOKS;hook_num++)
+    {
+        list_for_each_entry(elem, &nf_hooks[prot][hook_num], list) {
+            printk("hooknum %d,hook func is %llx\r\n",hook_num,elem->hook);
+        }
+    }
+
+    return ;
+
+}
 
 static int __init filter_init(void) {  
     __get_cpu_var(timestamp_val) = 0;
@@ -211,7 +235,7 @@ static int __init filter_init(void) {
     nf_register_hook(&sample_ops);
     nf_register_hook(&local_out_ops);
     nf_register_hook(&post_routing_ops);
-
+    list_nf_hook(PF_INET);
     //wireway_dev_init(); 
   return 0;  
 }  
