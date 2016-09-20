@@ -32,7 +32,7 @@ void record_timestamp(void)
     if(__get_cpu_var(timestamp_val) == 0)
     {
         __get_cpu_var(timestamp_val) = rdtsc();
-        printk("begin time stamp is %llx\r\n",__get_cpu_var(timestamp_val));
+        //printk("begin time stamp is %llx\r\n",__get_cpu_var(timestamp_val));
     }
     else
     {
@@ -61,8 +61,13 @@ const struct net_device *out,
 int (*okfn) (struct sk_buff *))  
 {  
     __be32 sip,dip;
-    struct timeval stamp ; 
- if(skb){  
+    struct timeval stamp ;
+
+	unsigned long long tmp1 ,tmp2,tmp3 =0;
+	tmp1= tmp2= tmp3 = 0;
+	tmp2 = rdtsc();
+	if(skb){ 
+	 
    struct sk_buff *sb = NULL;  
    sb = skb;  
    struct iphdr *iph;  
@@ -72,15 +77,19 @@ int (*okfn) (struct sk_buff *))
    //printk("Packet for source address: %d.%d.%d.%d\n destination address: %d.%d.%d.%d\n ", NIPQUAD(sip), NIPQUAD(dip));  
     if(IPPROTO_UDP == iph->protocol)
     {
-
-        skb_get_timestamp(skb,&stamp);
-        __get_cpu_var(timestamp_val) =0;
-        record_timestamp();
-        printk("pre routing skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);  
+	//tmp1 = rdtsc();
+        //skb_get_timestamp(skb,&stamp);
+        //__get_cpu_var(timestamp_val) = rdtsc();
+	skb->tstamp.tv64 = rdtsc();
+        //record_timestamp();
+	//tmp3 = rdtsc();
+        //printk("pre routing skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);  
     }
 
 
     }  
+	//printk("hook time2 is %x,%x\r\n",rdtsc()-tmp2,tmp3-tmp1);
+
  return NF_ACCEPT;  
 } 
 
@@ -137,12 +146,17 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
     struct udp_trans_wait_queue_head  *head = NULL;
     struct timeval stamp ;
     struct iphdr *iph;
-    iph  = ip_hdr(skb);
+	 struct udphdr *uhdr = NULL;
 
+    iph  = ip_hdr(skb);
 
     if(IPPROTO_UDP == iph->protocol) 
     {
+ 	uhdr = udp_hdr(skb);
+	if(ntohs(uhdr->dest) == local_port)	
+	printk("hook cost time is %x\r\n",rdtsc()- skb->tstamp.tv64);
 
+	#if 0
         skb_get_timestamp(skb,&stamp);
         record_timestamp();
         if(stamp.tv_sec != 0)
@@ -151,7 +165,9 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
             stamp = ktime_to_timeval(ktime_get_real());
             printk("local in over  skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);
         }
-    } 
+	#endif
+    }
+	#if 0 
     if(0 == is_udp_local_packet(skb,in,local_port))
     {
         printk("recv port %d packet\r\n",local_port);
@@ -171,13 +187,28 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
         }
         #endif               
     }
-
+	#endif
     return NF_ACCEPT;
 }
 
 static unsigned int local_out_func(unsigned int hooknum,struct sk_buff *skb,
 const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_buff*))
 {
+   struct sk_buff *sb = NULL;
+   sb = skb;
+   struct iphdr *iph;
+   iph  = ip_hdr(sb);
+   //printk("Packet for source address: %d.%d.%d.%d\n destination address: %d.%d.%d.%d\n ", NIPQUAD(sip), NIPQUAD(dip));  
+    if(IPPROTO_UDP == iph->protocol)
+    {
+        //tmp1 = rdtsc();
+        //skb_get_timestamp(skb,&stamp);
+        //__get_cpu_var(timestamp_val) = rdtsc();
+        skb->tstamp.tv64 = rdtsc();
+        //record_timestamp();
+        //tmp3 = rdtsc();
+        //printk("pre routing skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);  
+    }
 
     return NF_ACCEPT;
 }
@@ -185,6 +216,22 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
 static unsigned int post_routing_func(unsigned int hooknum,struct sk_buff *skb,
 const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_buff*))
 {
+	 struct sk_buff *sb = NULL;
+   sb = skb;
+   struct iphdr *iph;
+   iph  = ip_hdr(sb);
+   //printk("Packet for source address: %d.%d.%d.%d\n destination address: %d.%d.%d.%d\n ", NIPQUAD(sip), NIPQUAD(dip));  
+    if(IPPROTO_UDP == iph->protocol)
+    {
+        //tmp1 = rdtsc();
+        //skb_get_timestamp(skb,&stamp);
+        //__get_cpu_var(timestamp_val) = rdtsc();
+	printk("udp send hook time is %x\r\n",rdtsc()-skb->tstamp.tv64);	
+        skb->tstamp.tv64 = rdtsc();
+        //record_timestamp();
+        //tmp3 = rdtsc();
+        //printk("pre routing skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);  
+    }
 
     return NF_ACCEPT;
 }

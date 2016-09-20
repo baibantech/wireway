@@ -268,15 +268,15 @@ void entity_test_main()
     int client_socket_fd = -1;
     struct sockaddr_in server_addr;
     entity_req *req = NULL;
-    char *msg = NULL;
+    char *msg = "hello world\r\n";
     int msg_len = 0;
     int ret = 0;
     int i = 0;
-    int try_times = 0;
+    int try_times = 10;
     memset(&server_addr, 0,sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(6789);
-    if(inet_pton(AF_INET,"127.0.0.1", &server_addr.sin_addr) == 0){
+    if(inet_pton(AF_INET,"192.168.1.107", &server_addr.sin_addr) == 0){
         perror("Server IP Address Error:");
         exit(1);
     }
@@ -288,7 +288,7 @@ void entity_test_main()
         printf("create client socket err\r\n");
         exit(1);
     }
-
+	#if 0
     req = construct_req(pre_reg,"test1","test",strlen("hello pre reg"),"hello pre reg");
     if(!req)
     {
@@ -300,8 +300,9 @@ void entity_test_main()
     {
         exit(1);
     }
+	#endif
     while(i < try_times) {
-    if((ret =sendto(client_socket_fd, msg, msg_len,0,(struct sockaddr*)&server_addr,sizeof(server_addr))) < 0) 
+    if((ret =sendto(client_socket_fd, msg, strlen(msg),0,(struct sockaddr*)&server_addr,sizeof(server_addr))) < 0) 
     { 
         printf("Send File Name Failed:"); 
         exit(1); 
