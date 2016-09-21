@@ -9,10 +9,29 @@
 #include <linux/skbuff.h>  
 #include <linux/netfilter_ipv4.h>  
 #include <linux/inet.h>  
-#include <linux/inetdevice.h> 
+#include <linux/inetdevice.h>
+#include <net/snmp.h>
+#include <net/ip.h>
+#include <net/protocol.h>
+#include <net/route.h>
+#include <linux/skbuff.h>
+#include <net/sock.h>
+#include <net/arp.h>
+#include <net/icmp.h>
+#include <net/raw.h>
+#include <net/checksum.h>
+#include <net/inet_ecn.h>
+#include <linux/netfilter_ipv4.h>
+#include <net/xfrm.h>
+#include <linux/mroute.h>
+#include <linux/netlink.h>
+
+
+ 
 #include "wireway_dev.h" 
 MODULE_LICENSE("GPL");  
 DEFINE_PER_CPU(unsigned long long,timestamp_val);
+int ip_rcv_finish_2(struct sk_buff *skb);
 
 static unsigned long long rdtsc(void)
 {
@@ -63,6 +82,7 @@ int (*okfn) (struct sk_buff *))
     __be32 sip,dip;
     struct timeval stamp ;
 
+    struct udphdr *uhdr = NULL;
 	unsigned long long tmp1 ,tmp2,tmp3 =0;
 	tmp1= tmp2= tmp3 = 0;
 	tmp2 = rdtsc();
@@ -77,19 +97,30 @@ int (*okfn) (struct sk_buff *))
    //printk("Packet for source address: %d.%d.%d.%d\n destination address: %d.%d.%d.%d\n ", NIPQUAD(sip), NIPQUAD(dip));  
     if(IPPROTO_UDP == iph->protocol)
     {
+
+        uhdr = udp_hdr(skb);
+        if(ntohs(uhdr->dest) == 6789)
+        {
+
+
+
 	//tmp1 = rdtsc();
         //skb_get_timestamp(skb,&stamp);
         //__get_cpu_var(timestamp_val) = rdtsc();
-	skb->tstamp.tv64 = rdtsc();
-        //record_timestamp();
+	        skb->tstamp.tv64 = rdtsc();
+            //record_timestamp();
 	//tmp3 = rdtsc();
         //printk("pre routing skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);  
-    }
+    
+            ip_rcv_finish_2(skb);
+            return NF_STOLEN;
+        }
 
+        }
+    
 
     }  
 	//printk("hook time2 is %x,%x\r\n",rdtsc()-tmp2,tmp3-tmp1);
-
  return NF_ACCEPT;  
 } 
 
@@ -153,8 +184,12 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
     if(IPPROTO_UDP == iph->protocol) 
     {
  	uhdr = udp_hdr(skb);
-	if(ntohs(uhdr->dest) == local_port)	
-	printk("hook cost time is %x\r\n",rdtsc()- skb->tstamp.tv64);
+	if(ntohs(uhdr->dest) == local_port)
+    {
+	
+    	printk("hook cost time is %x\r\n",rdtsc()- skb->tstamp.tv64);
+        dump_stack();
+    }
 
 	#if 0
         skb_get_timestamp(skb,&stamp);
@@ -235,6 +270,120 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
 
     return NF_ACCEPT;
 }
+
+static inline bool ip_rcv_options(struct sk_buff *skb)
+{
+    struct ip_options *opt;
+    const struct iphdr *iph;
+    struct net_device *dev = skb->dev;
+
+    /* It looks as overkill, because not all
+       IP options require packet mangling.
+       But it is the easiest for now, especially taking
+       into account that combination of IP options
+       and running sniffer is extremely rare condition.
+                          --ANK (980813)
+    */
+    if (skb_cow(skb, skb_headroom(skb))) {
+        IP_INC_STATS_BH(dev_net(dev), IPSTATS_MIB_INDISCARDS);
+        goto drop;
+    }
+
+    iph = ip_hdr(skb);
+    opt = &(IPCB(skb)->opt);
+    opt->optlen = iph->ihl*4 - sizeof(struct iphdr);
+
+    if (ip_options_compile(dev_net(dev), opt, skb)) {
+        IP_INC_STATS_BH(dev_net(dev), IPSTATS_MIB_INHDRERRORS);
+        goto drop;
+    }
+
+    if (unlikely(opt->srr)) {
+        struct in_device *in_dev = __in_dev_get_rcu(dev);
+
+        if (in_dev) {
+            if (!IN_DEV_SOURCE_ROUTE(in_dev)) {
+                if (IN_DEV_LOG_MARTIANS(in_dev))
+                    net_info_ratelimited("source route option %pI4 -> %pI4\n",
+                                 &iph->saddr,
+                                 &iph->daddr);
+                goto drop;
+            }
+        }
+
+        if (ip_options_rcv_srr(skb))
+            goto drop;
+    }
+
+    return false;
+drop:
+    return true;
+}
+
+
+int ip_rcv_finish_2(struct sk_buff *skb)
+{
+    const struct iphdr *iph = ip_hdr(skb);
+    struct rtable *rt;
+    unsigned long long tmp,tmp1,tmp2,tmp3;
+    int res; 
+    #if 0
+    if (sysctl_ip_early_demux && !skb_dst(skb) && skb->sk == NULL) {
+        const struct net_protocol *ipprot;
+        int protocol = iph->protocol;
+
+        ipprot = rcu_dereference(inet_protos[protocol]);
+        if (ipprot && ipprot->early_demux) {
+            ipprot->early_demux(skb);
+            /* must reload iph, skb->head might have changed */
+            iph = ip_hdr(skb);
+        }
+    }
+    #endif
+    /*
+     *  Initialise the virtual path cache for the packet. It describes
+     *  how the packet travels inside Linux networking.
+     */
+    if (!skb_dst(skb)) {
+        tmp = rdtsc();
+        int err = ip_route_input_noref(skb, iph->daddr, iph->saddr,
+                           iph->tos, skb->dev);
+        tmp1 = rdtsc();
+        if (unlikely(err)) {
+            if (err == -EXDEV)
+                NET_INC_STATS_BH(dev_net(skb->dev),
+                         LINUX_MIB_IPRPFILTER);
+            goto drop;
+        }
+    }
+#if 0
+#ifdef CONFIG_IP_ROUTE_CLASSID
+    if (unlikely(skb_dst(skb)->tclassid)) {
+        struct ip_rt_acct *st = this_cpu_ptr(ip_rt_acct);
+        u32 idx = skb_dst(skb)->tclassid;
+        st[idx&0xFF].o_packets++;
+        st[idx&0xFF].o_bytes += skb->len;
+        st[(idx>>16)&0xFF].i_packets++;
+        st[(idx>>16)&0xFF].i_bytes += skb->len;
+    }
+#endif
+#endif
+    if (iph->ihl > 5 && ip_rcv_options(skb))
+        goto drop;
+    rt = skb_rtable(skb);
+    if (rt->rt_type == RTN_MULTICAST) {
+        IP_UPD_PO_STATS_BH(dev_net(rt->dst.dev), IPSTATS_MIB_INMCAST,
+                skb->len);
+    } else if (rt->rt_type == RTN_BROADCAST)
+        IP_UPD_PO_STATS_BH(dev_net(rt->dst.dev), IPSTATS_MIB_INBCAST,
+                skb->len);
+    res =  dst_input(skb);
+    return res;
+drop:
+    kfree_skb(skb);
+    return NET_RX_DROP;
+}
+
 
   
  struct nf_hook_ops sample_ops = {  
