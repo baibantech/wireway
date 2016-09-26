@@ -222,20 +222,22 @@ void wireway_thread_main()
     {
         ret = recvfrom(socket_descriptor,message,message_len,0,(struct sockaddr *)&sin,&sin_len);
 
+	#if 0
         printf("recv msg\r\n");
         printf("msg Len is %d\r\n",ret);
         printf("receive from %s\r\n" , inet_ntoa(sin.sin_addr));
         
-        #if 0
+        
         req = deserial_entity_req(message,ret);
         free(req);
-        #endif
+        
         head = (struct wireway_msg_head*)message;
         ret = construct_reply_msg(head->key,head->wireway_id,&reply); 
         if(ret)
         {
             sendto(socket_descriptor, reply, ret,0,(struct sockaddr*)&sin,sin_len);
-        } 
+        }
+	#endif 
         memset(message,0,message_len);
 
     }
@@ -272,7 +274,7 @@ void entity_test_main()
     int msg_len = 0;
     int ret = 0;
     int i = 0;
-    int try_times = 10;
+    int try_times = 1000;
     memset(&server_addr, 0,sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(6789);
@@ -306,8 +308,8 @@ void entity_test_main()
     { 
         printf("Send File Name Failed:"); 
         exit(1); 
-    } 
-    printf("send msg byte %d\r\n",ret);
+    }
+	sleep(1); 
     i++;
     }
     close(client_socket_fd);

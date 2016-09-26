@@ -25,13 +25,16 @@
 #include <net/xfrm.h>
 #include <linux/mroute.h>
 #include <linux/netlink.h>
-
-
+#include <net/udp.h>
+#include <net/inet_hashtables.h>
  
 #include "wireway_dev.h" 
 MODULE_LICENSE("GPL");  
 DEFINE_PER_CPU(unsigned long long,timestamp_val);
+
+DEFINE_PER_CPU(unsigned long long,timestamp_val1);
 int ip_rcv_finish_2(struct sk_buff *skb);
+struct udp_table *tmp_table =(struct udp_table*) (void*)(unsigned long long)0xffffffff81d18e70ULL;
 
 static unsigned long long rdtsc(void)
 {
@@ -186,9 +189,8 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
  	uhdr = udp_hdr(skb);
 	if(ntohs(uhdr->dest) == local_port)
     {
-	
     	printk("hook cost time is %x\r\n",rdtsc()- skb->tstamp.tv64);
-        dump_stack();
+	printk("route cost time %x,%x\r\n",__get_cpu_var(timestamp_val),__get_cpu_var(timestamp_val1));	
     }
 
 	#if 0
@@ -320,30 +322,235 @@ drop:
     return true;
 }
 
+static inline struct sock *__udp4_lib_lookup_skb(struct sk_buff *skb,
 
-int ip_rcv_finish_2(struct sk_buff *skb)
+						 __be16 sport, __be16 dport,
+
+						 struct udp_table *udptable)
+
+{
+
+	const struct iphdr *iph = ip_hdr(skb);
+
+
+
+	return __udp4_lib_lookup(dev_net(skb_dst(skb)->dev), iph->saddr, sport,
+
+				 iph->daddr, dport, inet_iif(skb),
+
+				 udptable);
+
+}
+
+static unsigned int udp4_portaddr_hash(struct net *net, __be32 saddr,
+
+				       unsigned int port)
+
+{
+
+	return jhash_1word((__force u32)saddr, net_hash_mix(net)) ^ port;
+
+}
+
+static struct sock *__udp4_lib_demux_lookup(struct net *net,
+
+					    __be16 loc_port, __be32 loc_addr,
+
+					    __be16 rmt_port, __be32 rmt_addr,
+
+					    int dif)
+
+{
+
+	struct sock *sk, *result;
+
+	struct hlist_nulls_node *node;
+
+	unsigned short hnum = ntohs(loc_port);
+
+	unsigned int hash2 = udp4_portaddr_hash(net, loc_addr, hnum);
+
+	unsigned int slot2 = hash2 & (udp_table.mask);
+
+	struct udp_hslot *hslot2 = &udp_table.hash2[slot2];
+
+	INET_ADDR_COOKIE(acookie, rmt_addr, loc_addr);
+
+	const __portpair ports = INET_COMBINED_PORTS(rmt_port, hnum);
+
+
+
+	rcu_read_lock();
+
+	result = NULL;
+
+	udp_portaddr_for_each_entry_rcu(sk, node, &hslot2->head) {
+
+		if (INET_MATCH(sk, net, acookie,
+
+			       rmt_addr, loc_addr, ports, dif))
+
+			result = sk;
+
+		/* Only check first socket in chain */
+
+		break;
+
+	}
+
+
+
+	if (result) {
+
+		if (unlikely(!atomic_inc_not_zero_hint(&result->sk_refcnt, 2)))
+
+			result = NULL;
+
+		else if (unlikely(!INET_MATCH(sk, net, acookie,
+
+					      rmt_addr, loc_addr,
+
+					      ports, dif))) {
+
+			sock_put(result);
+
+			result = NULL;
+
+		}
+
+	}
+
+	rcu_read_unlock();
+
+	return result;
+
+}
+
+
+
+void udp_v4_early_demux(struct sk_buff *skb)
+
+{
+
+	struct net *net = dev_net(skb->dev);
+
+	const struct iphdr *iph;
+
+	const struct udphdr *uh;
+
+	struct sock *sk,*sk1;
+
+	struct dst_entry *dst;
+
+	int dif = skb->dev->ifindex;
+
+
+
+	/* validate the packet */
+
+	if (!pskb_may_pull(skb, skb_transport_offset(skb) + sizeof(struct udphdr)))
+
+		return;
+
+
+
+	iph = ip_hdr(skb);
+
+	uh = udp_hdr(skb);
+
+
+	#if 0
+	if (skb->pkt_type == PACKET_BROADCAST ||
+
+	    skb->pkt_type == PACKET_MULTICAST)
+
+		sk = __udp4_lib_mcast_demux_lookup(net, uh->dest, iph->daddr,
+uh->source, iph->saddr, dif);
+	#endif
+	 if (skb->pkt_type == PACKET_HOST)
+
+		sk = __udp4_lib_demux_lookup(net, uh->dest, iph->daddr,
+
+					     uh->source, iph->saddr, dif);
+
+	else
+
+		return;
+	
+	//sk1 = __udp4_lib_lookup_skb(skb,uh->source,uh->dest,&udp_table);
+
+
+	if (!sk)
+	{
+		printk("not search sock\r\n");
+		return;
+	}
+	//printk("sk1 is %llx\r\n",sk1);
+
+	skb->sk = sk;
+
+	skb->destructor = sock_edemux;
+
+	dst = sk->sk_rx_dst;
+
+
+
+	if (dst)
+
+		dst = dst_check(dst, 0);
+
+	if (dst)
+
+		skb_dst_set_noref(skb, dst);
+
+}
+
+
+
+
+
+
+
+ip_rcv_finish_2(struct sk_buff *skb)
 {
     const struct iphdr *iph = ip_hdr(skb);
     struct rtable *rt;
     unsigned long long tmp,tmp1,tmp2,tmp3;
-    int res; 
-    #if 0
+    int res;
+	struct sock *sk1;
+	 const struct udphdr *uh;
+	uh = udp_hdr(skb);
+	tmp = tmp1=tmp2=tmp3 = 0; 
+    #if 1
+	printk("skb->pkt_type is %d\r\n",skb->pkt_type);
+    tmp2 = rdtsc();
     if (sysctl_ip_early_demux && !skb_dst(skb) && skb->sk == NULL) {
         const struct net_protocol *ipprot;
         int protocol = iph->protocol;
 
-        ipprot = rcu_dereference(inet_protos[protocol]);
+        ipprot = (struct net_protocol*)(void *)*(unsigned long long *)((unsigned long long)(0xffffffff81d184e0 +sizeof(void*)*protocol));
         if (ipprot && ipprot->early_demux) {
-            ipprot->early_demux(skb);
+	//	printk("early_demux is %llx\r\n",ipprot->early_demux);
+          //  ipprot->early_demux(skb);
             /* must reload iph, skb->head might have changed */
+	 udp_v4_early_demux(skb);
             iph = ip_hdr(skb);
         }
     }
+	tmp3 = rdtsc();
+
+	printk("skb sk is %llx\r\n",skb->sk);
     #endif
     /*
      *  Initialise the virtual path cache for the packet. It describes
      *  how the packet travels inside Linux networking.
      */
+
+	printk("udp source is %d,desr is %d\r\n",ntohs(uh->source),ntohs(uh->dest));
+	
+	sk1 = __udp4_lib_lookup_skb(skb,uh->source,uh->dest,&udp_table);
+
+	#if 0
     if (!skb_dst(skb)) {
         tmp = rdtsc();
         int err = ip_route_input_noref(skb, iph->daddr, iph->saddr,
@@ -356,6 +563,8 @@ int ip_rcv_finish_2(struct sk_buff *skb)
             goto drop;
         }
     }
+	__get_cpu_var(timestamp_val) = tmp3-tmp2;
+	__get_cpu_var(timestamp_val1)  = tmp1-tmp;
 #if 0
 #ifdef CONFIG_IP_ROUTE_CLASSID
     if (unlikely(skb_dst(skb)->tclassid)) {
@@ -379,6 +588,7 @@ int ip_rcv_finish_2(struct sk_buff *skb)
                 skb->len);
     res =  dst_input(skb);
     return res;
+	#endif
 drop:
     kfree_skb(skb);
     return NET_RX_DROP;
