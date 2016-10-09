@@ -13,6 +13,15 @@ extern void print_netdevice_info(void);
 extern void kernel_udp_sock_test(struct net *net);
 extern void kernel_udp_sock_realse(void);
 extern int send_udp_packet_test(void);
+
+
+int select_spider_addr(char *local_name,int local_id)
+{
+    return 1;
+}
+
+
+
 int wireway_dev_open(struct inode *inode,struct file *filp)
 {
     return 0;
@@ -32,9 +41,34 @@ int wireway_dev_ioctl(struct file *filp,unsigned int cmd,unsigned long args)
     switch(cmd)
     {
         case WIREWAY_IOC_CREATE_WIRE:
-            
+            {
+                char *wireway_name = (void*)args;
+
+                
+                int spider_addr  = select_spider_addr();
+                
+                ret = call_for_create_wireway(spider_addr,wireway_name);
+                
+                                
+
+
+   
+            } 
+                
              
             
+            break;
+        case WIREWAY_IOC_CREATE_COLLEXTOR:
+            {
+                char *collector_name = (void*)args;
+                if(!lookup_collector())
+                {
+                    create_collector();
+                }
+
+            }       
+
+
             break;
 
         default : printk("error cmd number\r\n");break;
