@@ -5,6 +5,7 @@
 #include <linux/cdev.h>
 #include <linux/slab.h>
 #include "wireway_dev.h"
+#include "wireway_node.h"
 
 dev_t wireway_dev;
 int dev_major = 0,dev_minor = 0;
@@ -40,6 +41,7 @@ int wireway_dev_ioctl(struct file *filp,unsigned int cmd,unsigned long args)
 {
     switch(cmd)
     {
+        #if 0
         case WIREWAY_IOC_CREATE_WIRE:
             {
                 char *wireway_name = (void*)args;
@@ -58,23 +60,33 @@ int wireway_dev_ioctl(struct file *filp,unsigned int cmd,unsigned long args)
              
             
             break;
-        case WIREWAY_IOC_CREATE_COLLEXTOR:
+        #endif
+        case WIREWAY_IOC_CREATE_COLLECTOR:
             {
                 char *collector_name = (void*)args;
-                if(!lookup_collector())
+                if(!lookup_collector(collector_name))
                 {
-                    create_collector();
+                    create_collector(collector_name);
+                }
+                else
+                {
+                    return -1;
                 }
 
             }       
 
 
             break;
-
         default : printk("error cmd number\r\n");break;
     }
     return 0;
 
+}
+
+
+int wireway_dev_mmap(struct file *filp,struct vm_area_struct *vm)
+{
+    return 0;
 }
 
 
@@ -84,7 +96,8 @@ static const struct file_operations wireway_dev_fops =
     .read =  wireway_dev_read,
     .write = wireway_dev_write,
     .open = wireway_dev_open,
-    .unlocked_ioctl = wireway_dev_ioctl, 
+    .unlocked_ioctl = wireway_dev_ioctl,
+    .mmap = wireway_dev_mmap, 
 };
 
 int wireway_dev_init(void)

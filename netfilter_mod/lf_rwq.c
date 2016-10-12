@@ -1,35 +1,12 @@
-
-#define _GNU_SOURCE
-#include <sched.h>
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <pthread.h>
-#include <sys/sysinfo.h>
-#include <sys/types.h>
-#include <sys/ipc.h>  
-#include <sys/shm.h>  
-#include <errno.h>
-#include <signal.h>
-#include<sys/wait.h>
-#include <sys/stat.h> /* For mode constants */
-#include <fcntl.h> /* For O_* constants */
-
-
-
-#include <atomic_user.h>
-#include <lf_rwq.h>
+#include <linux/slab.h>
+#include "lf_rwq.h"
 
 u32 mydebug[5][65536];
 
 
 void lfrwq_pre_alloc(lfrwq_t* qh);
 
-static unsigned long long rdtsc()
+static unsigned long long rdtsc(void)
 {
     unsigned int lo,hi;
     asm volatile
@@ -85,7 +62,7 @@ int lfrwq_inq(lfrwq_t* qh, void *data)
     if(qh->q[idx] != 0)
     {
         lfrwq_debug("inq overlap find");
-        assert(0);
+        //assert(0);
     }
     qh->q[idx] = (u64)data;
 
@@ -169,16 +146,12 @@ lfrwq_t* lfrwq_init(u32 q_len, u32 blk_len, u32 readers)
 
     blk_cnt = q_len/blk_len;
     total_len = sizeof(u64)*q_len + sizeof(lfrwq_t)+sizeof(u64)*(blk_cnt);
-
-    if( (fd = shm_open("region", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)) < 0 )
-    { 
-        lfrwq_debug("Create Share Memory Error:%s/n/a", strerror(errno));  
-        goto init_err;  
+    total_len = (1+(total_len -1)/PAGE_SIZE)*PAGE_SIZE;
+    qh = kmalloc(total_len,GFP_KERNEL);
+    if(!qh)
+    {
+        return NULL;
     }
-//    total_len = (1 + (total_len-1)/4096)*4096;
-    ftruncate(fd, total_len);
-    qh = mmap(NULL, total_len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    
     memset((void *)qh, 0, total_len);
     qh->r_cnt = (u64 *)((long)qh + sizeof(u64)*q_len + sizeof(lfrwq_t));
     #if 0
@@ -211,6 +184,9 @@ free_qh:
 init_err:    
     return NULL;
 }
+
+
+#if 0
 
 lfrwq_t *gqh;
 
@@ -461,7 +437,7 @@ static void sig_child(int signo)
 }
 
 
-
+#endif
 #endif
 
 

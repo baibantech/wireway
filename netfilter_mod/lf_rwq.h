@@ -1,7 +1,7 @@
 #ifndef _FREERWQ_H
 #define _FREERWQ_H
 
-#include <atomic_user.h>
+#include <linux/atomic.h>
 
 typedef struct {
 	volatile u64 r_idx;
@@ -43,9 +43,9 @@ lfrwq_t* lfrwq_init(u32 q_len, u32 blk_len, u32 readers);
 
 
 #define lfrwq_debug(f, a...)	{ \
-					printf ("LFRWQ DEBUG (%s, %d): %s:", \
+					printk ("LFRWQ DEBUG (%s, %d): %s:", \
 						__FILE__, __LINE__, __func__); \
-				  	printf (f, ## a); \
+				  	printk (f, ## a); \
 					}
 
 
