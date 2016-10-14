@@ -1,3 +1,5 @@
+#include <linux/kernel.h>
+#include <linux/mm.h>
 #include <linux/slab.h>
 #include "lf_rwq.h"
 
@@ -153,6 +155,13 @@ lfrwq_t* lfrwq_init(u32 q_len, u32 blk_len, u32 readers)
         return NULL;
     }
     memset((void *)qh, 0, total_len);
+    int page_num = total_len/PAGE_SIZE;
+    while(page_num)
+    {
+        SetPageReserved(virt_to_page(qh + (page_num -1)*PAGE_SIZE));
+        page_num--;
+    }
+    
     qh->r_cnt = (u64 *)((long)qh + sizeof(u64)*q_len + sizeof(lfrwq_t));
     #if 0
     if(qh->r_cnt == NULL)

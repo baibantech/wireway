@@ -1,10 +1,12 @@
 #include <linux/slab.h>
 #include "wireway_node.h"
 
-#define CACHE_PAGE_NUM (PAGE_SIZE/sizeof(id_node))
-#define CACHE_PAGE_MASK (CACHE_PAGE_NUM -1)
-
-
+id_cache_control *collector_cache = NULL ;
+unsigned long collector_global_id = 1;
+unsigned long get_collector_id(void)
+{
+    return collector_global_id++;
+}
 
 struct list_head collector_list = 
 {
@@ -28,6 +30,13 @@ void * call_for_attach_wireway(int spider_addr,char *wireway_name)
 
 }
 
+
+void collector_cahce_init(void)
+{
+    collector_cache = create_id_cache(); 
+}
+
+
 wireway_collector*  lookup_collector(char *name)
 {
     wireway_collector *ctmp = NULL;
@@ -41,7 +50,6 @@ wireway_collector*  lookup_collector(char *name)
     }
     return NULL;
 }
-
 
 int create_collector(char *name)
 {
@@ -59,7 +67,7 @@ int create_collector(char *name)
     {
         if(strcmp(ctmp->name,name) == 0)
         {
-            return -1;
+            return ctmp->collector_id;
         
         }else if(0 > strcmp(ctmp->name,name)) {
 
@@ -78,16 +86,18 @@ int create_collector(char *name)
         strcpy(node->name,name);
         INIT_LIST_HEAD(&node->node_list);
         node->rcv_queue = lfrwq_init(1024,128,6);
+        node->collector_id = get_collector_id(); 
         if(!node->rcv_queue)
         {
             kfree(node);
             return -1;
         }
+        
         list_add(&node->node_list,&ctmp->node_list); 
-         
+        cache_id_insert(collector_cache,node->collector_id,node); 
     }
 
-    return 0; 
+    return ; 
 }
 int get_size_order(unsigned long long  size)
 {
@@ -119,11 +129,11 @@ id_cache_control* create_id_cache(void)
     return NULL;
 }
 
-void*  cache_id_lookup(id_cache_control *cache, unsigned long long id)
+void*  cache_id_lookup(id_cache_control *cache, unsigned long  id)
 {
     unsigned int shift,mask,high;
-    unsigned long long id_tmp;
-    unsigned long long prefix;
+    unsigned long id_tmp;
+    unsigned long prefix;
 
     if(cache)
     {
@@ -168,11 +178,11 @@ void*  cache_id_lookup(id_cache_control *cache, unsigned long long id)
 }
 
 
-int cache_id_insert(id_cache_control * cache,unsigned long long id,void* item)
+int cache_id_insert(id_cache_control * cache,unsigned long id,void* item)
 {
     unsigned int shift,mask,high;
-    unsigned long long id_tmp;
-    unsigned long long prefix;
+    unsigned long id_tmp;
+    unsigned long prefix;
     if(cache)
     {
         shift = cache->shift;

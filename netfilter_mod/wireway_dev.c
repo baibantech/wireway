@@ -2,6 +2,7 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/fs.h>
+#include <linux/mm.h>
 #include <linux/cdev.h>
 #include <linux/slab.h>
 #include "wireway_dev.h"
@@ -86,9 +87,54 @@ int wireway_dev_ioctl(struct file *filp,unsigned int cmd,unsigned long args)
 
 int wireway_dev_mmap(struct file *filp,struct vm_area_struct *vm)
 {
+    unsigned long addr = vm->vm_start;
+    unsigned long collector_id =vm->vm_pgoff;
+    wireway_collector *collector = cache_id_lookup(collector_cache,collector_id);
+    if(collector)
+    {
+        unsigned long que_addr = collector->rcv_queue;
+        unsigned long que_phy_addr = virt_to_phys(que_addr);
+        unsigned long size = vm->vm_end - vm->vm_start; 
+        if(remap_pfn_range(vm,addr,que_phy_addr>>PAGE_SHIFT,size,PAGE_SHARED))
+        return -1;  
+
+    }
+
     return 0;
 }
 
+#if 0
+unsigned long  wireway_dev_get_umaped_area(struct file *filp, unsigned long addr , unsigned long len, unsigned long prot, unsigned long offset)
+{
+
+
+    #if 0
+
+    unsigned long (*get_area)(struct file *, unsigned long,
+                  unsigned long, unsigned long, unsigned long);
+
+
+    unsigned long collector_id = addr;
+    wireway_collector *collector = cache_id_lookup(collector_cache,collector_id);
+    
+
+    if(wireway_collector)
+    {
+        get_area =  current->mm->get_unmapped_area;
+         
+         
+
+
+   
+        
+    }
+    #endif
+
+
+    
+
+}
+#endif
 
 static const struct file_operations wireway_dev_fops = 
 {
@@ -97,7 +143,10 @@ static const struct file_operations wireway_dev_fops =
     .write = wireway_dev_write,
     .open = wireway_dev_open,
     .unlocked_ioctl = wireway_dev_ioctl,
-    .mmap = wireway_dev_mmap, 
+    .mmap = wireway_dev_mmap,
+    #if 0
+    .get_unmaped_area = wireway_dev_get_unmap_area, 
+    #endif
 };
 
 int wireway_dev_init(void)

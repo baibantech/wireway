@@ -20,7 +20,7 @@ typedef struct wireway_node
 typedef struct wireway_collector
 {
     char  name[32];
-    int  collector_id;
+    unsigned long  collector_id;
     lfrwq_t *rcv_queue; 
     struct list_head node_list;
 
@@ -43,10 +43,13 @@ typedef struct id_cache_control
     unsigned int size;
     unsigned int shift;
     unsigned int mask;
-    unsigned long long prefix;
+    unsigned long prefix;
     void *page_cache;
 }id_cache_control;
 
 wireway_collector*  lookup_collector(char *name);
 int create_collector(char *name);
-
+void *cache_id_lookup(id_cache_control *cache,unsigned long id);
+int cache_id_insert(id_cache_control *cache,unsigned long id,void *item);
+id_cache_control *create_id_cache(void);
+extern id_cache_control *collector_cache ;
