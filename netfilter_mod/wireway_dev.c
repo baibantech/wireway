@@ -5,12 +5,16 @@
 #include <linux/mm.h>
 #include <linux/cdev.h>
 #include <linux/slab.h>
+#include <linux/device.h>
+
 #include "wireway_dev.h"
 #include "wireway_node.h"
 
 dev_t wireway_dev;
 int dev_major = 0,dev_minor = 0;
 struct cdev *wireway_cdev = NULL;
+
+struct class *wireway_class = NULL;
 extern void print_netdevice_info(void);
 extern void kernel_udp_sock_test(struct net *net);
 extern void kernel_udp_sock_realse(void);
@@ -186,6 +190,19 @@ int wireway_dev_init(void)
         return result;
     }
     #endif
+    wireway_class = class_create(THIS_MODULE,"wireway_class");
+    
+    if(IS_ERR(wireway_class))
+    {
+        printk("create class error\r\n");
+        return -1;
+    }
+    
+    device_create(wireway_class,NULL,devno,NULL,"wireway");
+ 
+    wireway_dev = devno;
+
+
 
     /*need reg self user entity*/
     //print_netdevice_info();     
@@ -201,6 +218,8 @@ void wireway_dev_exit(void)
     {
         cdev_del(wireway_cdev);        
     }
+    device_destroy(wireway_class,wireway_dev);
+    class_destroy(wireway_class);    
 
     return;
 
