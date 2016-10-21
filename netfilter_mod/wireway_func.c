@@ -31,7 +31,7 @@ void * call_for_attach_wireway(int spider_addr,char *wireway_name)
 }
 
 
-void collector_cahce_init(void)
+void collector_cache_init(void)
 {
     collector_cache = create_id_cache(); 
 }
@@ -51,7 +51,7 @@ wireway_collector*  lookup_collector(char *name)
     return NULL;
 }
 
-int create_collector(char *name)
+unsigned long  create_collector(char *name)
 {
     wireway_collector *ctmp ,*node,*node_pre ;
 
@@ -94,15 +94,17 @@ int create_collector(char *name)
         }
         
         list_add(&node->node_list,&ctmp->node_list); 
-        cache_id_insert(collector_cache,node->collector_id,node); 
+        cache_id_insert(collector_cache,node->collector_id,node);
+        printk("collector add is 0x%p\r\n",node);
+        return node->collector_id; 
     }
 
-    return ; 
+    return -1 ; 
 }
-int get_size_order(unsigned long long  size)
+int get_size_order(unsigned int  size)
 {
     int order = 0;
-    while(size)
+    while(size > 1)
     {
         if(size %2 != 0)
         {
@@ -110,19 +112,37 @@ int get_size_order(unsigned long long  size)
         }
         size = size >>1;
         order++;
-    } 
-    return order;
+    }
+     
+    return order + 1;
 }
+
+void printf_cache_control(id_cache_control *cache)
+{
+    if(cache)
+    {
+        printk("cache high is %d\r\n",cache->high);
+        printk("cache shift is %d\r\n",cache->shift);
+        printk("cache mask is %d\r\n",cache->mask);
+        printk("cache prefix is %d\r\n",cache->prefix);
+    } 
+
+
+}
+
 id_cache_control* create_id_cache(void)
 {
     id_cache_control *cache = kmalloc(sizeof(id_cache_control),GFP_KERNEL);
     if(cache)
     {
+        memset(cache,0,sizeof(id_cache_control));
         cache->high = 1;
         cache->size = PAGE_SIZE/sizeof(id_node);
         cache->mask = cache->size -1;
-        cache->shift = get_size_order(cache->size); 
+        cache->shift = get_size_order(cache->size);
+        cache->prefix = 0; 
         cache->page_cache = get_zeroed_page(GFP_KERNEL);
+        printf_cache_control(cache);
         if(cache->page_cache)
             return cache;
     }
@@ -187,7 +207,8 @@ int cache_id_insert(id_cache_control * cache,unsigned long id,void* item)
     {
         shift = cache->shift;
         mask = cache->mask;
-        high = cache->high; 
+        high = cache->high;
+ 
         id_node *node_page_start= cache->page_cache;
         prefix = cache->prefix;
         id_tmp = id >> (high*shift);
@@ -207,22 +228,22 @@ int cache_id_insert(id_cache_control * cache,unsigned long id,void* item)
         {
             id_tmp = id >> ((high -1)*shift);
             id_tmp = id_tmp&mask;
-            id_node node = node_page_start[id_tmp];
             if(1 == high)
             {
-                if(node.node_ptr != 0)
+                if(node_page_start[id_tmp].node_ptr != 0)
                 {
                         //chong fu
+                        printk("return error\r\n");
                         return -1;
                 }
-                node.node_ptr = item;
+                node_page_start[id_tmp].node_ptr = item;
             }
             else
             {
-                node_page_start = node.node_ptr;
+                node_page_start =node_page_start[id_tmp].node_ptr;
                 if(!node_page_start)
                 {
-                    node_page_start = node.node_ptr = get_zeroed_page(GFP_KERNEL);
+                    node_page_start = node_page_start[id_tmp].node_ptr = get_zeroed_page(GFP_KERNEL);
                 }
             }
             
@@ -231,5 +252,5 @@ int cache_id_insert(id_cache_control * cache,unsigned long id,void* item)
         } 
 
     }
-    return -1;            
+    return 0;            
 }

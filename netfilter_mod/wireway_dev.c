@@ -8,6 +8,7 @@
 #include <linux/device.h>
 #include <linux/threads.h>
 #include <linux/kthread.h>
+#include <linux/delay.h>
 #include <linux/cpumask.h>
 #include "wireway_dev.h"
 #include "wireway_node.h"
@@ -85,42 +86,76 @@ int packet_rcv_wakeup(void)
 
 static int packet_rcv_process(void *args)
 {
-    wireway_collector *collector = lookup_collector("collector/main");
-    lfrwq_t *qh = collector->rcv_queue;
     void *msg = NULL;
     int cpu = *(int*)args;
     unsigned long long idx = 0;
-    int count;
     int msg_count = 0;
-    atomic_xchg(&p_control->task_state[cpu],thread_running);
+    int count = 0;
+    unsigned int local_pmt = 0;
+    unsigned int read_cnt = 0;
+    unsigned int local_idx = 0;
+    wireway_collector *collector = lookup_collector("collector/main");
+    if(NULL == collector)
+    {
+        printk("collector error\r\n");
+        return -1;
+    }
+    lfrwq_t *qh = collector->rcv_queue;
+    
     do
     {
-        idx = lfrwq_deq(qh,&msg);
-        if(NULL != msg)
-        {
-            count = 0;
-            //set_msg_index(idx,msg);
-            //handle_msg();
-            printk("rcv msg\r\n");
-            msg_count++;
-            continue;
-        }
-        else
+        read_cnt = 0;
+        local_pmt = lfrwq_get_rpermit(qh);
+        
+        if(0 == local_pmt)
         {
             count++;
-        }
-        
-        if(10 == msg_count)
-        {
-            
+            if(100 == count)
+            {
+                packet_rcv_wait(cpu);
+            }
         }
 
-        if(count++ == 10)
+
+        while(local_pmt > 0)
+        { 
+            idx = lfrwq_deq(qh,&msg);
+            if(msg)
+            {
+                printk("rcv msg\r\n");
+                msg_count++;
+                if(msg_count > 10)
+                {
+                    msg_count = 0;
+                    schedule();// 10 msg free cpu
+                }
+            }    
+            local_pmt--;
+            
+            if(0 == read_cnt)
+            {
+                local_idx = idx;
+                read_cnt++;
+                continue;
+            }
+
+            if(idx != local_idx)
+            {
+                lfrwq_add_rcnt(qh,read_cnt,local_idx);
+                read_cnt = 0;
+                local_idx = idx;
+            }
+            
+            read_cnt++;       
+        }
+
+        if(read_cnt)
         {
-            packet_rcv_wait(cpu);
-        }        
+            lfrwq_add_rcnt(qh,read_cnt,local_idx);
+        }
+    
         
-    }while(kthread_should_stop());
+    }while(!kthread_should_stop());
     return 0;        
 }
 
@@ -135,17 +170,31 @@ int packet_process_init(void)
        
         for_each_online_cpu(cpu)
         {
-            p_control->task[cpu] = kthread_create(packet_rcv_process,&cpu,"pkt_rcv_%d",cpu);
             atomic_set(&p_control->task_state[cpu] ,thread_wait);
+            p_control->task[cpu] = kthread_create(packet_rcv_process,&cpu,"pkt_rcv_%d",cpu);
             p_control->thread_num++;
             kthread_bind(p_control->task[cpu],cpu);
             wake_up_process(p_control->task[cpu]); 
         }  
         
     }
-    create_collector("collector/main");
+    return 0;
+}
 
-
+void packet_process_release(void)
+{
+    int cpu ;
+    if(p_control)
+    {
+        for_each_online_cpu(cpu)
+        {
+            if(p_control->task[cpu])
+            {
+                kthread_stop(p_control->task[cpu]);
+            }
+        }
+        kfree(p_control);
+    }
 }
 
 int select_spider_addr(char *local_name,int local_id)
@@ -296,6 +345,8 @@ int wireway_dev_init(void)
 {
     int result ;
     dev_t devno = MKDEV(dev_major,0);
+    unsigned long  collector_id = 0;
+    wireway_collector *collector = NULL;
     printk("hello wireway dev init\r\n");
     if(dev_major)
     {
@@ -343,14 +394,20 @@ int wireway_dev_init(void)
     
     collector_cache_init();
 
-
+    collector_id = create_collector("collector/main");
+    printk("main collector id is %d\r\n",collector_id);
+    collector = cache_id_lookup(collector_cache,collector_id);
+    printk("collector addr is 0x%p\r\n",collector);
+    collector = lookup_collector("collector/main");
+    printk("collector addr is 0x%p\r\n",collector);
+    
     packet_process_init(); 
 
     /*need reg self user entity*/
     //print_netdevice_info();     
     //kernel_udp_sock_test(NULL);
     //kernel_udp_sock_realse();
-    send_udp_packet_test();
+    //send_udp_packet_test();
     return 0;
 }
 void wireway_dev_exit(void)
@@ -362,6 +419,8 @@ void wireway_dev_exit(void)
     }
     device_destroy(wireway_class,wireway_dev);
     class_destroy(wireway_class);    
+    
+    packet_process_release();
 
     return;
 
