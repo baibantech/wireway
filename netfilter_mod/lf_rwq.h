@@ -40,7 +40,7 @@ int lfrwq_get_rpermit(lfrwq_t* qh);
 void lfrwq_add_rcnt(lfrwq_t* qh, u32 total, u32 cnt_idx);
 
 lfrwq_t* lfrwq_init(u32 q_len, u32 blk_len, u32 readers);
-
+int lfrwq_soft_inq(lfrwq_t *qh,u64 w_idx);
 
 #define lfrwq_debug(f, a...)	{ \
 					printk ("LFRWQ DEBUG (%s, %d): %s:", \

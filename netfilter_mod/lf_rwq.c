@@ -57,6 +57,11 @@ int lfrwq_soft_inq(lfrwq_t *qh,u64 w_idx)
     laps = idx >> qh->q_pow;
     idx = idx&(qh->len - 1);
     blk_idx = idx >> qh->blk_pow;
+
+    if((idx&(qh->blk_len-1)) == 0)
+    {
+        return ;
+    }
     
     rd_cnt = qh->r_cnt[blk_idx];
     if((rd_cnt >> qh->blk_pow) < laps)

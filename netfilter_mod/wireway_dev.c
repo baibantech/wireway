@@ -23,6 +23,9 @@ extern void kernel_udp_sock_test(struct net *net);
 extern void kernel_udp_sock_realse(void);
 extern int send_udp_packet_test(void);
 
+wireway_collector *collector_main = NULL;
+struct timer_list my_timer = {0};
+
 enum kthread_state
 {
     thread_wait = 1 ,
@@ -94,13 +97,13 @@ static int packet_rcv_process(void *args)
     unsigned int local_pmt = 0;
     unsigned int read_cnt = 0;
     unsigned int local_idx = 0;
-    wireway_collector *collector = lookup_collector("collector/main");
-    if(NULL == collector)
+    collector_main  = lookup_collector("collector/main");
+    if(NULL == collector_main)
     {
         printk("collector error\r\n");
         return -1;
     }
-    lfrwq_t *qh = collector->rcv_queue;
+    lfrwq_t *qh = collector_main->rcv_queue;
     
     do
     {
@@ -158,11 +161,44 @@ static int packet_rcv_process(void *args)
     }while(!kthread_should_stop());
     return 0;        
 }
+static void packet_timer_process(unsigned long data)
+{
+//    static int local_w_idx = 1;
+//    static int local_count = 0;
 
+    #if 0
+    if(collector_main)
+    {
+        lfrwq_t *qh = collector_main->rcv_queue;
+        if(local_w_idx == qh->w_idx)
+        {
+            if(local_count++ >5)
+            {
+                local_count = 0;
+                //lfrwq_soft_inq(qh,local_w_idx);                
+            }   
+        }
+        else
+        {
+            local_w_idx = qh->w_idx;
+            local_count = 0;
+        } 
+    }
+    #endif
+    //printk("timer run\r\n");
+    del_timer(&my_timer);
+    #if 0
+    my_timer.function = packet_timer_process;
+    my_timer.data = 0;
+    my_timer.expires = jiffies + 5*HZ;
+    add_timer(&my_timer);
+    #endif
+}
 
 int packet_process_init(void)
 {
     int cpu = 0;
+    struct timer_list my_timer = {0};
     p_control = kmalloc(sizeof(packet_process_control),GFP_KERNEL);
     if(p_control)
     {
@@ -178,6 +214,15 @@ int packet_process_init(void)
         }  
         
     }
+    
+    init_timer(&my_timer);
+    my_timer.function = packet_timer_process;
+    my_timer.data = 0;
+    my_timer.expires = jiffies + 5*HZ;
+    add_timer(&my_timer);
+    printk("HZ is %d\r\n",HZ);         
+
+
     return 0;
 }
 
@@ -195,6 +240,7 @@ void packet_process_release(void)
         }
         kfree(p_control);
     }
+    del_timer(&my_timer);
 }
 
 int select_spider_addr(char *local_name,int local_id)
