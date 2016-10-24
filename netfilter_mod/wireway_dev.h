@@ -1,5 +1,8 @@
-#include <linux/init.h>
+#ifndef WIREWAY_DEV_H
+#define WIREWAY_DEV_H
 
+#include <linux/init.h>
+#include "wireway_node.h"
 #define WIREWAY_IOCTL_MAGIC 0xF8
 
 
@@ -48,4 +51,5 @@ int wireway_dev_init(void);
 void wireway_dev_exit(void);
 struct udp_trans_wait_queue_head* get_wait_queue_head(unsigned long wireway_id,char type);
 int udp_trans_wake(struct udp_trans_wait_queue_head *head,    unsigned long key,void  *msg);
-
+extern wireway_collector *collector_main;
+#endif

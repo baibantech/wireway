@@ -12,6 +12,9 @@
 #include <linux/inetdevice.h> 
 #include "wireway_dev.h" 
 MODULE_LICENSE("GPL");  
+
+int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port);
+
   
 static unsigned int sample(  
 unsigned int hooknum,  
@@ -21,16 +24,26 @@ const struct net_device *out,
 int (*okfn) (struct sk_buff *))  
 {  
     __be32 sip,dip; 
- if(skb){  
-   struct sk_buff *sb = NULL;  
-   sb = skb;  
-   struct iphdr *iph;  
-   iph  = ip_hdr(sb);  
-   sip = iph->saddr;  
-   dip = iph->daddr;  
-   //printk("Packet for source address: %d.%d.%d.%d\n destination address: %d.%d.%d.%d\n ", NIPQUAD(sip), NIPQUAD(dip));  
+    if(skb){  
+        struct sk_buff *sb = NULL;  
+        sb = skb;  
+        struct iphdr *iph;  
+        iph  = ip_hdr(sb);  
+        sip = iph->saddr;  
+        dip = iph->daddr;  
+        
+        if(0 == is_udp_local_packet(skb,in,6789))
+        {
+            if(collector_main)
+            {
+                __skb_pull(skb,sizeof(struct iphdr)+sizeof(struct udphdr));
+                lfrwq_inq(collector_main,skb); 
+                return NF_STOLEN;
+            }
+        } 
+
     }  
- return NF_ACCEPT;  
+    return NF_ACCEPT;  
 } 
 
 int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port)
@@ -125,20 +138,20 @@ struct nf_hook_ops local_in_ops = {
 }; 
   
 static int __init filter_init(void) {  
-  nf_register_hook(&local_in_ops);
-  nf_register_hook(&sample_ops); 
-  wireway_dev_init(); 
-  return 0;  
+    nf_register_hook(&local_in_ops);
+    nf_register_hook(&sample_ops); 
+    wireway_dev_init(); 
+    return 0;  
 }  
   
   
 static void __exit filter_exit(void) { 
     wireway_dev_exit(); 
-  nf_unregister_hook(&sample_ops);
-  nf_unregister_hook(&local_in_ops);  
+    nf_unregister_hook(&sample_ops);
+    nf_unregister_hook(&local_in_ops);  
 }  
   
  module_init(filter_init);  
  module_exit(filter_exit);   
- MODULE_AUTHOR("chenkangrui");  
+ MODULE_AUTHOR("lijiyong");  
  MODULE_DESCRIPTION("netfilter_mod");  

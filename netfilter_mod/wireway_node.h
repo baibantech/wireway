@@ -1,3 +1,5 @@
+#ifndef WIREWAY_NODE_H
+#define WIREWAY_NODE_H
 #include <linux/list.h>
 #include "lf_rwq.h"
 
@@ -55,3 +57,4 @@ id_cache_control *create_id_cache(void);
 void collector_cache_init(void);
 
 extern id_cache_control *collector_cache ;
+#endif
