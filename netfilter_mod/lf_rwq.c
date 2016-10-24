@@ -45,6 +45,47 @@ u64 lfrwq_deq(lfrwq_t* qh, void **ppdata)
     return (idx >> qh->blk_pow);
 }
 
+int lfrwq_soft_inq(lfrwq_t *qh,u64 w_idx)
+{
+    u64 idx,laps;
+    volatile u64 rd_cnt;
+    u32 blk_idx;
+    u32 w_num = 0;
+    
+
+    idx = w_idx;
+    laps = idx >> qh->q_pow;
+    idx = idx&(qh->len - 1);
+    blk_idx = idx >> qh->blk_pow;
+    
+    rd_cnt = qh->r_cnt[blk_idx];
+    if((rd_cnt >> qh->blk_pow) < laps)
+    {
+        return ;
+    }
+    
+    w_num = qh->blk_len - (idx&(qh->blk_len -1));
+
+    while(w_num)
+    {         
+        idx = atomic64_cmpxchg((atomic64_t *)&qh->w_idx ,w_idx,w_idx+1);
+        if(idx != w_idx)
+        {
+            return ;
+        }   
+        
+        if(qh->q[idx] != 0)
+        {   
+            lfrwq_debug("inq overlap find");
+            return;
+        }
+        qh->q[idx] = 0xABABABABBABABABA;
+        w_idx++;
+        w_num--;    
+
+    }
+}
+
 int lfrwq_inq(lfrwq_t* qh, void *data)
 {
     u64 idx, laps;
