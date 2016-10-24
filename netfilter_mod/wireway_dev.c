@@ -24,7 +24,7 @@ extern void kernel_udp_sock_realse(void);
 extern int send_udp_packet_test(void);
 
 wireway_collector *collector_main = NULL;
-struct timer_list my_timer = {0};
+struct timer_list wireway_timer = {0};
 
 enum kthread_state
 {
@@ -161,12 +161,11 @@ static int packet_rcv_process(void *args)
     }while(!kthread_should_stop());
     return 0;        
 }
-static void packet_timer_process(unsigned long data)
+static void wireway_packet_timer(unsigned long data)
 {
-//    static int local_w_idx = 1;
-//    static int local_count = 0;
+    static int local_w_idx = 1;
+    static int local_count = 0;
 
-    #if 0
     if(collector_main)
     {
         lfrwq_t *qh = collector_main->rcv_queue;
@@ -175,7 +174,7 @@ static void packet_timer_process(unsigned long data)
             if(local_count++ >5)
             {
                 local_count = 0;
-                //lfrwq_soft_inq(qh,local_w_idx);                
+                lfrwq_soft_inq(qh,local_w_idx);                
             }   
         }
         else
@@ -184,15 +183,11 @@ static void packet_timer_process(unsigned long data)
             local_count = 0;
         } 
     }
-    #endif
-    //printk("timer run\r\n");
-    del_timer(&my_timer);
-    #if 0
-    my_timer.function = packet_timer_process;
-    my_timer.data = 0;
-    my_timer.expires = jiffies + 5*HZ;
-    add_timer(&my_timer);
-    #endif
+    
+    wireway_timer.data = 0;
+    wireway_timer.expires = jiffies + 5*HZ;
+    add_timer(&wireway_timer);
+   
 }
 
 int packet_process_init(void)
@@ -215,11 +210,11 @@ int packet_process_init(void)
         
     }
     
-    init_timer(&my_timer);
-    my_timer.function = packet_timer_process;
-    my_timer.data = 0;
-    my_timer.expires = jiffies + 5*HZ;
-    add_timer(&my_timer);
+    init_timer(&wireway_timer);
+    wireway_timer.function = wireway_packet_timer;
+    wireway_timer.data = 0;
+    wireway_timer.expires = jiffies + 5*HZ;
+    add_timer(&wireway_timer);
     printk("HZ is %d\r\n",HZ);         
 
 
@@ -240,7 +235,7 @@ void packet_process_release(void)
         }
         kfree(p_control);
     }
-    del_timer(&my_timer);
+    del_timer(&wireway_timer);
 }
 
 int select_spider_addr(char *local_name,int local_id)
