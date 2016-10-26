@@ -12,8 +12,10 @@
 #include <linux/inetdevice.h> 
 #include "wireway_dev.h" 
 MODULE_LICENSE("GPL");  
-
+int msg_rcv = 0;
+int msg_in_err = 0;
 int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port);
+extern void show_packet_rcv_control(void);
 
   
 static unsigned int sample(  
@@ -35,15 +37,24 @@ int (*okfn) (struct sk_buff *))
         if(0 == is_udp_local_packet(skb,in,6789))
         {
             if(collector_main)
-            {
+            {   
+                msg_rcv++;
                 __skb_pull(skb,sizeof(struct iphdr)+sizeof(struct udphdr));
-                lfrwq_inq(collector_main,skb); 
-                return NF_STOLEN;
+                if(0 == lfrwq_inq(collector_main->rcv_queue,skb))
+                {
+                    packet_rcv_wakeup(); 
+                    return NF_STOLEN;
+                }
+                else
+                {
+                    packet_rcv_wakeup();
+                    show_packet_rcv_control();
+                }
             }
         } 
 
     }  
-    return NF_ACCEPT;  
+    return NF_DROP;  
 } 
 
 int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port)
@@ -74,7 +85,6 @@ int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short
         for (ifa = in_dev->ifa_list; ifa; ifa = ifa->ifa_next) {
             if(ntohl(ifa->ifa_address) == ntohl(dip))
             {
-                printk("device addr is 0x%x\r\n",ntohl(ifa->ifa_address));
                 if(ntohs(uhdr->dest) == port)
                 {
                     rcu_read_unlock();

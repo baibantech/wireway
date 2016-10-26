@@ -52,7 +52,7 @@ int lfrwq_soft_inq(lfrwq_t *qh,u64 w_idx)
     u32 blk_idx;
     u32 w_num = 0;
     
-
+    //printk("idx is %lld\r\n",w_idx);
     idx = w_idx;
     laps = idx >> qh->q_pow;
     idx = idx&(qh->len - 1);
@@ -66,10 +66,12 @@ int lfrwq_soft_inq(lfrwq_t *qh,u64 w_idx)
     rd_cnt = qh->r_cnt[blk_idx];
     if((rd_cnt >> qh->blk_pow) < laps)
     {
+        printk("blk idex is %d,rd_cnt is %lld\r\n",blk_idx,rd_cnt);
         return ;
     }
-    
+    printk("soft in q w_idex is %lld\r\n",w_idx);
     w_num = qh->blk_len - (idx&(qh->blk_len -1));
+    printk("soft inq w_num is %d\r\n",w_num);
 
     while(w_num)
     {         
@@ -79,6 +81,8 @@ int lfrwq_soft_inq(lfrwq_t *qh,u64 w_idx)
             return ;
         }   
         
+        idx = idx&(qh->len - 1);
+            
         if(qh->q[idx] != 0)
         {   
             lfrwq_debug("inq overlap find");
@@ -91,6 +95,53 @@ int lfrwq_soft_inq(lfrwq_t *qh,u64 w_idx)
     }
 }
 
+#if 1
+int lfrwq_inq(lfrwq_t *qh,void *data)
+{
+    volatile u64 w_idx,idx,laps;
+    u32 blk_idx;
+    volatile u64 rd_cnt;
+    u32 w_num = 0;
+    while(1)
+    {
+        w_idx = idx = qh->w_idx;
+        laps = idx >> qh->q_pow;
+        idx = idx&(qh->len - 1);
+        blk_idx = idx >> qh->blk_pow;
+    
+        rd_cnt = qh->r_cnt[blk_idx];
+        if((rd_cnt >> qh->blk_pow) < laps)
+        {
+            printk("blk idex is %d,rd_cnt is %lld\r\n",blk_idx,rd_cnt);
+            printk("r_idx is %lld\r\n",qh->r_idx);
+            return -1 ;
+        }
+                 
+        idx = atomic64_cmpxchg((atomic64_t *)&qh->w_idx ,w_idx,w_idx+1);
+        if(idx != w_idx)
+        {
+            continue;
+        }   
+        idx = idx&(qh->len - 1); 
+        if(qh->q[idx] != 0)
+        {   
+            lfrwq_debug("inq overlap find");
+            return -1;
+        }
+        qh->q[idx] = data;
+
+        if((idx&(qh->blk_len - 1)) == 0)
+        {
+            lfrwq_pre_alloc(qh);
+        }
+
+        return 0;
+    }
+}
+#endif
+
+
+#if 0
 int lfrwq_inq(lfrwq_t* qh, void *data)
 {
     u64 idx, laps;
@@ -121,7 +172,7 @@ int lfrwq_inq(lfrwq_t* qh, void *data)
         
     return 0;
 }
-
+#endif
 
 void lfrwq_add_rcnt(lfrwq_t* qh, u32 total, u32 cnt_idx)
 {

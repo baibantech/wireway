@@ -16,7 +16,7 @@
 dev_t wireway_dev;
 int dev_major = 0,dev_minor = 0;
 struct cdev *wireway_cdev = NULL;
-
+extern int msg_rcv;
 struct class *wireway_class = NULL;
 extern void print_netdevice_info(void);
 extern void kernel_udp_sock_test(struct net *net);
@@ -25,10 +25,12 @@ extern int send_udp_packet_test(void);
 
 wireway_collector *collector_main = NULL;
 struct timer_list wireway_timer = {0};
+struct timer_list wireway_debug_timer = {0};
 
 enum kthread_state
 {
-    thread_wait = 1 ,
+    thread_idle,
+    thread_wait  ,
     thread_running,
     thread_run,
 };
@@ -37,27 +39,53 @@ typedef struct packet_process_control
 {
     int thread_num;
     struct task_struct*  task[NR_CPUS];
-    atomic_t  task_state[NR_CPUS];
+    volatile atomic_t  task_state[NR_CPUS];
     atomic_t  task_wake;
+    volatile unsigned long task_wake_num[NR_CPUS];
+    volatile unsigned long task_wake_num1[NR_CPUS];
+    volatile unsigned long task_wait_num[NR_CPUS];
+    volatile unsigned long task_wait_num1[NR_CPUS];
+    volatile unsigned long task_leave_wait[NR_CPUS];
 }packet_process_control;
 
 packet_process_control *p_control = NULL;
 
+void show_packet_rcv_control(void)
+{
+    int i = 0;
+    for(i = 0 ;i <p_control->thread_num ; i++)
+    {   
+        printk("-------------------------------------------\r\n");
+        printk("cpu  %d,task state %d\r\n",i,p_control->task[i]->state);
+        printk("cpu  %d,task_state %d\r\n",i,p_control->task_state[i].counter);
+        printk("cpu  %d,task wait num %lld\r\n",i,p_control->task_wait_num[i]);
+        printk("cpu  %d,task wait1 num %lld\r\n",i,p_control->task_wait_num1[i]);
+        printk("cpu  %d,task leave num %lld\r\n",i,p_control->task_leave_wait[i]);
+        printk("cpu  %d,task wakeup num %lld\r\n",i,p_control->task_wake_num[i]);
+        printk("cpu  %d,task wakeup1 num %lld\r\n",i,p_control->task_wake_num1[i]); 
+    }
+}
+
 void packet_rcv_wait(int cpu)
 {
     int old_state;
-    set_current_state(TASK_UNINTERRUPTIBLE);
     old_state = atomic_xchg(&p_control->task_state[cpu],thread_wait);
     if(thread_run == old_state)
     {
-        set_current_state(TASK_RUNNING);
+        atomic_xchg(&p_control->task_state[cpu],thread_running);
+        p_control->task_wait_num[cpu]++;
+        barrier();
         schedule();
     }
     else
     {
+        set_current_state(TASK_UNINTERRUPTIBLE);
+        p_control->task_wait_num1[cpu]++;
+        barrier();
         schedule();
+        atomic_xchg(&p_control->task_state[cpu],thread_running);
     }
-    atomic_xchg(&p_control->task_state[cpu],thread_running);
+    p_control->task_leave_wait[cpu]++;
 }
 
 
@@ -69,28 +97,60 @@ int packet_rcv_wakeup(void)
     int wake_thread = 0;
     for(i = 0; i < thread_num ; i++)
     {
-        if(thread_wait == atomic_cmpxchg(&p_control->task_state[i],thread_wait,thread_run))
+        if(smp_processor_id () == i)
         {
-            while(!wake_up_process(p_control->task[i]));
+            continue;
+        }
+        old_state = atomic_xchg(&p_control->task_state[i],thread_run);
+        if((old_state != thread_run) && (old_state != thread_running))
+        {
+            //printk("wake up process %d\r\n",i);
+            p_control->task_wake_num[i]++;
+            while(0 == wake_up_process(p_control->task[i]))
+            {
+                barrier();
+                if(p_control->task_state[i].counter != thread_running)
+                {
+                    break;
+                }
+            }
             return 1;            
         }
                
-
     }
-    wake_thread = atomic_add_return(1,&p_control->task_wake);
-    wake_thread = wake_thread%p_control->thread_num; 
-    old_state = atomic_xchg(&p_control->task_state[wake_thread],thread_run);
-    if(thread_wait == old_state)
+    #if 0
+    while(1)
     {
-        while(!wake_up_process(p_control->task[wake_thread]));
-    } 
+        wake_thread = atomic_add_return(1,&p_control->task_wake);
+        wake_thread = wake_thread%p_control->thread_num;
+        if(wake_thread != smp_processor_id())
+        {
+     
+            old_state = atomic_xchg(&p_control->task_state[wake_thread],thread_run);
+            if(thread_wait == old_state)
+            {
+              //  printk("wake up process %d\r\n",wake_thread);
+                p_control->task_wake_num1[i]++;
+                while(0 == wake_up_process(p_control->task[i]))
+                {
+                    if(p_control->task_state[i].counter != thread_running)
+                    {
+                        break;
+                    }
+                }
+
+            }
+            break;
+        }
+    }    
+    #endif
     return 0;
 }
 
 static int packet_rcv_process(void *args)
 {
     void *msg = NULL;
-    int cpu = *(int*)args;
+    int cpu = smp_processor_id();
     unsigned long long idx = 0;
     int msg_count = 0;
     int count = 0;
@@ -104,10 +164,9 @@ static int packet_rcv_process(void *args)
         return -1;
     }
     lfrwq_t *qh = collector_main->rcv_queue;
-    
+    printk("thread %d run \r\n",cpu)  ;  
     do
     {
-        read_cnt = 0;
         local_pmt = lfrwq_get_rpermit(qh);
         
         if(0 == local_pmt)
@@ -116,21 +175,34 @@ static int packet_rcv_process(void *args)
             if(100 == count)
             {
                 packet_rcv_wait(cpu);
+                count = 0;
             }
         }
-
+        else
+        {
+            //printk("pmt is %d\r\n",local_pmt);
+        }
 
         while(local_pmt > 0)
         { 
             idx = lfrwq_deq(qh,&msg);
             if(msg)
             {
-                printk("rcv msg\r\n");
+                if(msg == 0xABABABABBABABABA)
+                {
+                    //printk("msg soft in q\r\n");
+                
+                }
+                else
+                {
+                    kfree(msg);
+                }
                 msg_count++;
-                if(msg_count > 10)
+
+                if(msg_count > 100)
                 {
                     msg_count = 0;
-                    schedule();// 10 msg free cpu
+                    schedule();
                 }
             }    
             local_pmt--;
@@ -144,6 +216,7 @@ static int packet_rcv_process(void *args)
 
             if(idx != local_idx)
             {
+                //printk("local idx is %d,idx is %d,read_cnt is %lld\r\n",local_idx,idx,read_cnt);
                 lfrwq_add_rcnt(qh,read_cnt,local_idx);
                 read_cnt = 0;
                 local_idx = idx;
@@ -155,6 +228,7 @@ static int packet_rcv_process(void *args)
         if(read_cnt)
         {
             lfrwq_add_rcnt(qh,read_cnt,local_idx);
+            read_cnt = 0;
         }
     
         
@@ -166,6 +240,7 @@ static void wireway_packet_timer(unsigned long data)
     static int local_w_idx = 1;
     static int local_count = 0;
 
+   // show_packet_rcv_control();
     if(collector_main)
     {
         lfrwq_t *qh = collector_main->rcv_queue;
@@ -174,6 +249,7 @@ static void wireway_packet_timer(unsigned long data)
             if(local_count++ >5)
             {
                 local_count = 0;
+                //printk("msg_rcv is %d\r\n",msg_rcv);
                 lfrwq_soft_inq(qh,local_w_idx);                
             }   
         }
@@ -185,9 +261,24 @@ static void wireway_packet_timer(unsigned long data)
     }
     
     wireway_timer.data = 0;
-    wireway_timer.expires = jiffies + 5*HZ;
+    wireway_timer.expires = jiffies + 50;
     add_timer(&wireway_timer);
    
+}
+
+static void debug_timer_process(unsigned long data)
+{
+    show_packet_rcv_control();
+    if(collector_main)
+    {
+        lfrwq_t *qh = collector_main->rcv_queue;
+        printk("queue rd idx is %lld\r\n",qh->r_idx);
+        printk("queue wd idx is %lld\r\n",qh->w_idx);
+    }
+
+    wireway_debug_timer.data = 0;
+    wireway_debug_timer.expires = jiffies + 10*HZ;
+    add_timer(&wireway_debug_timer); 
 }
 
 int packet_process_init(void)
@@ -198,14 +289,22 @@ int packet_process_init(void)
     if(p_control)
     {
         memset(p_control,0,sizeof(packet_process_control));
-       
+        printk("current cpu is %d\r\n",smp_processor_id());       
         for_each_online_cpu(cpu)
         {
-            atomic_set(&p_control->task_state[cpu] ,thread_wait);
-            p_control->task[cpu] = kthread_create(packet_rcv_process,&cpu,"pkt_rcv_%d",cpu);
+            atomic_set(&p_control->task_state[cpu] ,thread_idle);
+            p_control->task[cpu] = kthread_create_on_node(packet_rcv_process,NULL,cpu_to_node(cpu),"pkt_rcv_%d",cpu);
             p_control->thread_num++;
-            kthread_bind(p_control->task[cpu],cpu);
-            wake_up_process(p_control->task[cpu]); 
+            if(!IS_ERR(p_control->task[cpu]))
+            { 
+                kthread_bind(p_control->task[cpu],cpu);
+                wake_up_process(p_control->task[cpu]);
+            }
+            else
+            {
+                printk("init kernel thread err\r\n");
+            }
+
         }  
         
     }
@@ -213,11 +312,16 @@ int packet_process_init(void)
     init_timer(&wireway_timer);
     wireway_timer.function = wireway_packet_timer;
     wireway_timer.data = 0;
-    wireway_timer.expires = jiffies + 5*HZ;
+    wireway_timer.expires = jiffies + 50;
     add_timer(&wireway_timer);
+    
+    init_timer(&wireway_debug_timer);
+    wireway_debug_timer.function = debug_timer_process;
+    wireway_debug_timer.data = 0;
+    wireway_debug_timer.expires = jiffies + 10*HZ;
+    add_timer(&wireway_debug_timer);
     printk("HZ is %d\r\n",HZ);         
-
-
+    show_packet_rcv_control();
     return 0;
 }
 
@@ -236,6 +340,7 @@ void packet_process_release(void)
         kfree(p_control);
     }
     del_timer(&wireway_timer);
+    del_timer(&wireway_debug_timer);
 }
 
 int select_spider_addr(char *local_name,int local_id)

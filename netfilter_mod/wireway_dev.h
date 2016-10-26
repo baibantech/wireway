@@ -51,5 +51,6 @@ int wireway_dev_init(void);
 void wireway_dev_exit(void);
 struct udp_trans_wait_queue_head* get_wait_queue_head(unsigned long wireway_id,char type);
 int udp_trans_wake(struct udp_trans_wait_queue_head *head,    unsigned long key,void  *msg);
+int packet_rcv_wakeup(void);
 extern wireway_collector *collector_main;
 #endif
