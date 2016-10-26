@@ -27,6 +27,13 @@ wireway_collector *collector_main = NULL;
 struct timer_list wireway_timer = {0};
 struct timer_list wireway_debug_timer = {0};
 
+
+extern unsigned long msg_in_queue_av;
+extern unsigned long msg_in_queue_max ;
+extern unsigned long wake_av ;
+extern unsigned long wake_max ;
+
+
 enum kthread_state
 {
     thread_idle,
@@ -275,7 +282,10 @@ static void debug_timer_process(unsigned long data)
         printk("queue rd idx is %lld\r\n",qh->r_idx);
         printk("queue wd idx is %lld\r\n",qh->w_idx);
     }
-
+    show_long_val(msg_in_queue_av);
+    show_long_val(msg_in_queue_max);
+    show_long_val(wake_av);
+    show_long_val(wake_max);
     wireway_debug_timer.data = 0;
     wireway_debug_timer.expires = jiffies + 10*HZ;
     add_timer(&wireway_debug_timer); 

@@ -17,6 +17,24 @@ int msg_in_err = 0;
 int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port);
 extern void show_packet_rcv_control(void);
 
+unsigned long msg_in_queue_av = 0;
+unsigned long msg_in_queue_max = 0;
+unsigned long wake_av = 0;
+unsigned long wake_max = 0;
+unsigned long wake_total = 0;
+unsigned long msg_in_queue_total = 0;
+
+
+static unsigned long long rdtsc(void)
+{
+    unsigned int lo,hi;
+    asm volatile
+    (
+     "rdtsc":"=a"(lo),"=d"(hi) 
+    ); 
+    return (unsigned long long)hi<<32|lo;
+}   
+
   
 static unsigned int sample(  
 unsigned int hooknum,  
@@ -25,7 +43,12 @@ const struct net_device *in,
 const struct net_device *out,  
 int (*okfn) (struct sk_buff *))  
 {  
-    __be32 sip,dip; 
+    __be32 sip,dip;
+    int ret;
+    unsigned long begin;
+    unsigned long end;
+    
+     
     if(skb){  
         struct sk_buff *sb = NULL;  
         sb = skb;  
@@ -40,9 +63,33 @@ int (*okfn) (struct sk_buff *))
             {   
                 msg_rcv++;
                 __skb_pull(skb,sizeof(struct iphdr)+sizeof(struct udphdr));
-                if(0 == lfrwq_inq(collector_main->rcv_queue,skb))
+                begin = rdtsc();
+
+                ret = lfrwq_inq(collector_main->rcv_queue,skb);
+                end =  rdtsc();
+                
+                msg_in_queue_total += end-begin;
+                msg_in_queue_av = msg_in_queue_total/msg_rcv++;
+                
+                if(end- begin > msg_in_queue_max)
                 {
-                    packet_rcv_wakeup(); 
+                    msg_in_queue_max = end -begin;
+                }
+                if(0 == ret)
+                {
+                    begin = rdtsc();
+                    packet_rcv_wakeup();
+                    end = rdtsc(); 
+                    
+                    wake_total += end - begin ;
+                    wake_av = wake_total/msg_rcv;
+                    if(wake_max < end -begin)
+                    {
+                        wake_max = end -begin;
+                    }                   
+                    
+
+ 
                     return NF_STOLEN;
                 }
                 else
