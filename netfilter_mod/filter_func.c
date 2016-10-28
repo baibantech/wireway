@@ -16,14 +16,17 @@ int msg_rcv = 0;
 int msg_in_err = 0;
 int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port);
 extern void show_packet_rcv_control(void);
-
+int irq_cpu = 3;
 unsigned long msg_in_queue_av = 0;
 unsigned long msg_in_queue_max = 0;
+unsigned long msg_in_queue_step1 = 0;
+unsigned long msg_in_queue_step2 = 0;
 unsigned long wake_av = 0;
 unsigned long wake_max = 0;
 unsigned long wake_total = 0;
 unsigned long msg_in_queue_total = 0;
-
+extern unsigned long inq_step1 ;
+extern unsigned long inq_step2 ;
 
 static unsigned long long rdtsc(void)
 {
@@ -47,8 +50,12 @@ int (*okfn) (struct sk_buff *))
     int ret;
     unsigned long begin;
     unsigned long end;
-    
-     
+    unsigned long  flag;        
+    if(smp_processor_id() != irq_cpu)
+    {
+        printk("irq cpu is %d\r\n",smp_processor_id());
+        irq_cpu = smp_processor_id();
+    } 
     if(skb){  
         struct sk_buff *sb = NULL;  
         sb = skb;  
@@ -63,20 +70,26 @@ int (*okfn) (struct sk_buff *))
             {   
                 msg_rcv++;
                 __skb_pull(skb,sizeof(struct iphdr)+sizeof(struct udphdr));
+                local_irq_save(flag);
                 begin = rdtsc();
-
+                //local_irq_save(flag);
                 ret = lfrwq_inq(collector_main->rcv_queue,skb);
+                //local_irq_restore(flag);
                 end =  rdtsc();
+                local_irq_restore(flag);
                 
                 msg_in_queue_total += end-begin;
-                msg_in_queue_av = msg_in_queue_total/msg_rcv++;
+                msg_in_queue_av = msg_in_queue_total/msg_rcv;
                 
                 if(end- begin > msg_in_queue_max)
                 {
                     msg_in_queue_max = end -begin;
+                    msg_in_queue_step1 = inq_step1;
+                    msg_in_queue_step2 = inq_step2;
                 }
                 if(0 == ret)
                 {
+                    #if 1
                     begin = rdtsc();
                     packet_rcv_wakeup();
                     end = rdtsc(); 
@@ -87,7 +100,7 @@ int (*okfn) (struct sk_buff *))
                     {
                         wake_max = end -begin;
                     }                   
-                    
+                    #endif
 
  
                     return NF_STOLEN;

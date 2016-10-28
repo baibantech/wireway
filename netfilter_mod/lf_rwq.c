@@ -5,8 +5,12 @@
 
 u32 mydebug[5][65536];
 
-
+unsigned long inq_max = 0;
+unsigned long soft_inq_max = 0;
 void lfrwq_pre_alloc(lfrwq_t* qh);
+
+unsigned long inq_step1 = 0;
+unsigned long inq_step2 = 0;
 
 static unsigned long long rdtsc(void)
 {
@@ -102,13 +106,19 @@ int lfrwq_inq(lfrwq_t *qh,void *data)
     u32 blk_idx;
     volatile u64 rd_cnt;
     u32 w_num = 0;
+    u32 count = 0;
+    unsigned long long begin;
+    inq_step1 = 0;
+    inq_step2 = 0;
     while(1)
     {
+        begin = rdtsc();
+     
         w_idx = idx = qh->w_idx;
         laps = idx >> qh->q_pow;
         idx = idx&(qh->len - 1);
         blk_idx = idx >> qh->blk_pow;
-    
+        count++; 
         rd_cnt = qh->r_cnt[blk_idx];
         if((rd_cnt >> qh->blk_pow) < laps)
         {
@@ -116,8 +126,10 @@ int lfrwq_inq(lfrwq_t *qh,void *data)
             printk("r_idx is %lld\r\n",qh->r_idx);
             return -1 ;
         }
-                 
         idx = atomic64_cmpxchg((atomic64_t *)&qh->w_idx ,w_idx,w_idx+1);
+        inq_step1 += rdtsc() - begin;
+        begin = rdtsc();         
+            
         if(idx != w_idx)
         {
             continue;
@@ -134,12 +146,15 @@ int lfrwq_inq(lfrwq_t *qh,void *data)
         {
             lfrwq_pre_alloc(qh);
         }
-
+        if(count >inq_max)
+        {
+            inq_max = count;
+        }
+        inq_step2 += rdtsc() - begin;
         return 0;
     }
 }
 #endif
-
 
 #if 0
 int lfrwq_inq(lfrwq_t* qh, void *data)
@@ -147,7 +162,10 @@ int lfrwq_inq(lfrwq_t* qh, void *data)
     u64 idx, laps;
     volatile u64 rd_cnt;
     u32 blk_idx;
-
+    unsigned long long begin;
+    unsigned long long end;
+    
+    begin = rdtsc();
     idx = atomic64_add_return(1,(atomic64_t *)&qh->w_idx) - 1;
     laps = idx >> qh->q_pow;
     idx = idx&(qh->len - 1);
@@ -157,7 +175,9 @@ int lfrwq_inq(lfrwq_t* qh, void *data)
     {
         rd_cnt = qh->r_cnt[blk_idx];
     }while((rd_cnt >> qh->blk_pow) < laps);
+    inq_step1 = rdtsc() -begin;
     
+    begin = rdtsc(); 
     if(qh->q[idx] != 0)
     {
         lfrwq_debug("inq overlap find");
@@ -169,7 +189,7 @@ int lfrwq_inq(lfrwq_t* qh, void *data)
     {
         lfrwq_pre_alloc(qh);
     }
-        
+    inq_step2 = rdtsc() - begin;    
     return 0;
 }
 #endif

@@ -6,6 +6,7 @@
 #include <linux/cdev.h>
 #include <linux/slab.h>
 #include <linux/device.h>
+#include <linux/netdevice.h>
 #include <linux/threads.h>
 #include <linux/kthread.h>
 #include <linux/delay.h>
@@ -32,7 +33,9 @@ extern unsigned long msg_in_queue_av;
 extern unsigned long msg_in_queue_max ;
 extern unsigned long wake_av ;
 extern unsigned long wake_max ;
-
+extern unsigned long inq_max ;
+extern unsigned long msg_in_queue_step1;
+extern unsigned long msg_in_queue_step2;
 
 enum kthread_state
 {
@@ -108,6 +111,11 @@ int packet_rcv_wakeup(void)
         {
             continue;
         }
+ 
+        if(p_control->task_state[i].counter == thread_run)
+        {
+            continue;
+        } 
         old_state = atomic_xchg(&p_control->task_state[i],thread_run);
         if((old_state != thread_run) && (old_state != thread_running))
         {
@@ -182,12 +190,14 @@ static int packet_rcv_process(void *args)
             if(100 == count)
             {
                 packet_rcv_wait(cpu);
+                //schedule();
                 count = 0;
             }
         }
         else
         {
             //printk("pmt is %d\r\n",local_pmt);
+            count = 0;
         }
 
         while(local_pmt > 0)
@@ -282,10 +292,18 @@ static void debug_timer_process(unsigned long data)
         printk("queue rd idx is %lld\r\n",qh->r_idx);
         printk("queue wd idx is %lld\r\n",qh->w_idx);
     }
+    if (static_key_false(0xFFFFFFFF81D168C0)) 
+    {
+        printk("rps is run\r\n");
+    }
+    
     show_long_val(msg_in_queue_av);
     show_long_val(msg_in_queue_max);
+    show_long_val(msg_in_queue_step1);
+    show_long_val(msg_in_queue_step2);
     show_long_val(wake_av);
     show_long_val(wake_max);
+    show_long_val(inq_max);
     wireway_debug_timer.data = 0;
     wireway_debug_timer.expires = jiffies + 10*HZ;
     add_timer(&wireway_debug_timer); 
