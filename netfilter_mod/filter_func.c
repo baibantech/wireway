@@ -112,9 +112,9 @@ int (*okfn) (struct sk_buff *))
                 }
             }
         } 
-
+	return NF_DROP;
     }  
-    return NF_DROP;  
+    return NF_ACCEPT;  
 } 
 
 int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port)
