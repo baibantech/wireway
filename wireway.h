@@ -2,6 +2,7 @@
 #define __wireway__
 #include <stdio.h>
 #include "list.h"
+#include "user_entity.h"
 #define MAX_LEN 32
 #define point_in 1
 #define point_out 2
@@ -24,29 +25,78 @@
 #define point_idle 1
 #define point_active 2
 
-
 #define MAX_POINT_NUM_PER_BLOCK 12
-typedef struct location_tag
+
+
+#define user_entity_pre_reg 1
+#define user_entity_reg 2
+/* define user entity desc*/
+typedef struct user_port_addr
 {
-    int uid;
-    int addr;
-    int prior;
-    int type;
-}location;
+    int addr_type;
+    struct list_head list;
+    union {
+        unsigned long addr;
+        char addr_string[64];
+    }port_logic_addr;
+
+    union {
+        unsigned long phy_addr;
+        char phy_addr_string[64];
+    }port_phy_addr;
+
+}user_port_addr;
+
+typedef struct user_logic_port_tag
+{
+    struct list_head list;
+    struct list_head addr_list;
+    char port_name[32];
+    int port_index;
+    int port_type;
+    int port_state;
+    int addr_num;
+}user_logic_port;
+
+typedef struct user_entity_desc_tag
+{
+    char state;
+    char *name;
+    char *group_name;
+    unsigned long name_id;
+    unsigned long root_block_id;
+    unsigned long user_token;
+    int port_num;
+    struct list_head port_list;
+
+    int relate_wireway_num;
+    int relate_point_num;
+    struct list_head create_wire_list;
+    struct list_head attach_point;
+    user_entity_root_block *block;
+
+}user_entity_desc;
+/*end define user entity desc*/
+
+typedef struct point_location_tag
+{
+    struct list_head usr_list;
+    int user_port_index;
+}point_location;
 
 typedef struct point_tag
 {
     struct list_head list;
     struct list_head fib;
+    struct list_head usr;
     struct wireway_tag *wire;
     int index;
-    int  addr;
-    struct location_tag *location;
+    int addr;
     char dest;
     char state;
     char type;
+    point_location loaddr;
 }point;
-
 
 typedef struct bridge_slave_point_tag
 {
@@ -65,6 +115,7 @@ typedef struct bridge_point_tag
     struct bridge_slave_point_tag bridge_slave;
     int location_peer_index;
     int slave_point_index;
+    point_location loaddr;
     int index;
     char dest;
     char type;    
@@ -138,6 +189,8 @@ typedef struct wireway_tag
 {
     char   *name;
     struct wireway_tag *next;
+    user_entity_desc *owner;
+    struct list_head usr_list; 
     
     struct point_tag *peer[2];
     int point_num;

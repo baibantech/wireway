@@ -262,7 +262,7 @@ void test_wireway2()
    #endif
    //disk_storage_exit();
 }
-
+/*
 int main(void)
 {
     storage_sys_init();
@@ -277,3 +277,4 @@ int main(void)
     } 
     return 0;
 }
+*/

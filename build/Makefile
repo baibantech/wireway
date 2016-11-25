@@ -95,11 +95,18 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_wireway_OBJECTS = wireway_core.$(OBJEXT) func.$(OBJEXT) \
-	bptree.$(OBJEXT) storage_sys.$(OBJEXT) bitmap.$(OBJEXT) \
-	bitops.$(OBJEXT)
+am_wireway_OBJECTS = wireway-main.$(OBJEXT) \
+	wireway-msg_queue.$(OBJEXT) wireway-thread_main.$(OBJEXT) \
+	wireway-wireway_core.$(OBJEXT) wireway-wireway_func.$(OBJEXT) \
+	wireway-bptree.$(OBJEXT) wireway-storage_sys.$(OBJEXT) \
+	wireway-bitmap.$(OBJEXT) wireway-bitops.$(OBJEXT) \
+	wireway-user_entity.$(OBJEXT) \
+	wireway-user_entity_core.$(OBJEXT) \
+	wireway-wireway_server.$(OBJEXT)
 wireway_OBJECTS = $(am_wireway_OBJECTS)
 wireway_LDADD = $(LDADD)
+wireway_LINK = $(CCLD) $(wireway_CFLAGS) $(CFLAGS) $(wireway_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
 am__v_P_0 = false
@@ -116,6 +123,10 @@ DEFAULT_INCLUDES = -I. -I$(srcdir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 AM_V_CC = $(am__v_CC_$(V))
@@ -174,12 +185,21 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
+<<<<<<< HEAD
 ACLOCAL = ${SHELL} /home/lixiao1/wireway_test/Wireway-test/missing aclocal-1.14
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AUTOCONF = ${SHELL} /home/lixiao1/wireway_test/Wireway-test/missing autoconf
 AUTOHEADER = ${SHELL} /home/lixiao1/wireway_test/Wireway-test/missing autoheader
 AUTOMAKE = ${SHELL} /home/lixiao1/wireway_test/Wireway-test/missing automake-1.14
+=======
+ACLOCAL = ${SHELL} /home/bb1/Wireway-test/missing aclocal-1.14
+AMTAR = $${TAR-tar}
+AM_DEFAULT_VERBOSITY = 1
+AUTOCONF = ${SHELL} /home/bb1/Wireway-test/missing autoconf
+AUTOHEADER = ${SHELL} /home/bb1/Wireway-test/missing autoheader
+AUTOMAKE = ${SHELL} /home/bb1/Wireway-test/missing automake-1.14
+>>>>>>> user_entity
 AWK = mawk
 CC = gcc -std=gnu99
 CCDEPMODE = depmode=gcc3
@@ -204,7 +224,11 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
+<<<<<<< HEAD
 MAKEINFO = ${SHELL} /home/lixiao1/wireway_test/Wireway-test/missing makeinfo
+=======
+MAKEINFO = ${SHELL} /home/bb1/Wireway-test/missing makeinfo
+>>>>>>> user_entity
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = wireway
@@ -219,10 +243,17 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = 
 VERSION = 0.0.1
+<<<<<<< HEAD
 abs_builddir = /home/lixiao1/wireway_test/Wireway-test/build
 abs_srcdir = /home/lixiao1/wireway_test/Wireway-test/build/..
 abs_top_builddir = /home/lixiao1/wireway_test/Wireway-test/build
 abs_top_srcdir = /home/lixiao1/wireway_test/Wireway-test/build/..
+=======
+abs_builddir = /home/bb1/Wireway-test/build
+abs_srcdir = /home/bb1/Wireway-test/build/..
+abs_top_builddir = /home/bb1/Wireway-test/build
+abs_top_srcdir = /home/bb1/Wireway-test/build/..
+>>>>>>> user_entity
 ac_ct_CC = gcc
 am__include = include
 am__leading_dot = .
@@ -241,7 +272,11 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
+<<<<<<< HEAD
 install_sh = ${SHELL} /home/lixiao1/wireway_test/Wireway-test/install-sh
+=======
+install_sh = ${SHELL} /home/bb1/Wireway-test/install-sh
+>>>>>>> user_entity
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -261,7 +296,9 @@ target_alias =
 top_build_prefix = 
 top_builddir = .
 top_srcdir = ..
-wireway_SOURCES = func.h wireway.h wireway_core.c func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c
+wireway_SOURCES = main.c msg_queue.c thread_main.c  func.h wireway.h wireway_core.c wireway_func.c bptree.c storage_sys.c btree.h storage_sys.h bitmap.c bitops.c user_entity.c user_entity_core.c wireway_server.c
+wireway_LDFLAGS = -L usr/lib64  -pthread
+wireway_CFLAGS = -D__LINUX_64__ -D__LITTLE_ENDIAN__
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -361,7 +398,7 @@ clean-binPROGRAMS:
 
 wireway$(EXEEXT): $(wireway_OBJECTS) $(wireway_DEPENDENCIES) $(EXTRA_wireway_DEPENDENCIES) 
 	@rm -f wireway$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(wireway_OBJECTS) $(wireway_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(wireway_LINK) $(wireway_OBJECTS) $(wireway_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -369,12 +406,18 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/bitmap.Po
-include ./$(DEPDIR)/bitops.Po
-include ./$(DEPDIR)/bptree.Po
-include ./$(DEPDIR)/func.Po
-include ./$(DEPDIR)/storage_sys.Po
-include ./$(DEPDIR)/wireway_core.Po
+include ./$(DEPDIR)/wireway-bitmap.Po
+include ./$(DEPDIR)/wireway-bitops.Po
+include ./$(DEPDIR)/wireway-bptree.Po
+include ./$(DEPDIR)/wireway-main.Po
+include ./$(DEPDIR)/wireway-msg_queue.Po
+include ./$(DEPDIR)/wireway-storage_sys.Po
+include ./$(DEPDIR)/wireway-thread_main.Po
+include ./$(DEPDIR)/wireway-user_entity.Po
+include ./$(DEPDIR)/wireway-user_entity_core.Po
+include ./$(DEPDIR)/wireway-wireway_core.Po
+include ./$(DEPDIR)/wireway-wireway_func.Po
+include ./$(DEPDIR)/wireway-wireway_server.Po
 
 .c.o:
 	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -389,6 +432,174 @@ include ./$(DEPDIR)/wireway_core.Po
 #	$(AM_V_CC)source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+wireway-main.o: main.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-main.o -MD -MP -MF $(DEPDIR)/wireway-main.Tpo -c -o wireway-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-main.Tpo $(DEPDIR)/wireway-main.Po
+#	$(AM_V_CC)source='main.c' object='wireway-main.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+
+wireway-main.obj: main.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-main.obj -MD -MP -MF $(DEPDIR)/wireway-main.Tpo -c -o wireway-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-main.Tpo $(DEPDIR)/wireway-main.Po
+#	$(AM_V_CC)source='main.c' object='wireway-main.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+
+wireway-msg_queue.o: msg_queue.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-msg_queue.o -MD -MP -MF $(DEPDIR)/wireway-msg_queue.Tpo -c -o wireway-msg_queue.o `test -f 'msg_queue.c' || echo '$(srcdir)/'`msg_queue.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-msg_queue.Tpo $(DEPDIR)/wireway-msg_queue.Po
+#	$(AM_V_CC)source='msg_queue.c' object='wireway-msg_queue.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-msg_queue.o `test -f 'msg_queue.c' || echo '$(srcdir)/'`msg_queue.c
+
+wireway-msg_queue.obj: msg_queue.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-msg_queue.obj -MD -MP -MF $(DEPDIR)/wireway-msg_queue.Tpo -c -o wireway-msg_queue.obj `if test -f 'msg_queue.c'; then $(CYGPATH_W) 'msg_queue.c'; else $(CYGPATH_W) '$(srcdir)/msg_queue.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-msg_queue.Tpo $(DEPDIR)/wireway-msg_queue.Po
+#	$(AM_V_CC)source='msg_queue.c' object='wireway-msg_queue.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-msg_queue.obj `if test -f 'msg_queue.c'; then $(CYGPATH_W) 'msg_queue.c'; else $(CYGPATH_W) '$(srcdir)/msg_queue.c'; fi`
+
+wireway-thread_main.o: thread_main.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-thread_main.o -MD -MP -MF $(DEPDIR)/wireway-thread_main.Tpo -c -o wireway-thread_main.o `test -f 'thread_main.c' || echo '$(srcdir)/'`thread_main.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-thread_main.Tpo $(DEPDIR)/wireway-thread_main.Po
+#	$(AM_V_CC)source='thread_main.c' object='wireway-thread_main.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-thread_main.o `test -f 'thread_main.c' || echo '$(srcdir)/'`thread_main.c
+
+wireway-thread_main.obj: thread_main.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-thread_main.obj -MD -MP -MF $(DEPDIR)/wireway-thread_main.Tpo -c -o wireway-thread_main.obj `if test -f 'thread_main.c'; then $(CYGPATH_W) 'thread_main.c'; else $(CYGPATH_W) '$(srcdir)/thread_main.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-thread_main.Tpo $(DEPDIR)/wireway-thread_main.Po
+#	$(AM_V_CC)source='thread_main.c' object='wireway-thread_main.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-thread_main.obj `if test -f 'thread_main.c'; then $(CYGPATH_W) 'thread_main.c'; else $(CYGPATH_W) '$(srcdir)/thread_main.c'; fi`
+
+wireway-wireway_core.o: wireway_core.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-wireway_core.o -MD -MP -MF $(DEPDIR)/wireway-wireway_core.Tpo -c -o wireway-wireway_core.o `test -f 'wireway_core.c' || echo '$(srcdir)/'`wireway_core.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-wireway_core.Tpo $(DEPDIR)/wireway-wireway_core.Po
+#	$(AM_V_CC)source='wireway_core.c' object='wireway-wireway_core.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-wireway_core.o `test -f 'wireway_core.c' || echo '$(srcdir)/'`wireway_core.c
+
+wireway-wireway_core.obj: wireway_core.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-wireway_core.obj -MD -MP -MF $(DEPDIR)/wireway-wireway_core.Tpo -c -o wireway-wireway_core.obj `if test -f 'wireway_core.c'; then $(CYGPATH_W) 'wireway_core.c'; else $(CYGPATH_W) '$(srcdir)/wireway_core.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-wireway_core.Tpo $(DEPDIR)/wireway-wireway_core.Po
+#	$(AM_V_CC)source='wireway_core.c' object='wireway-wireway_core.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-wireway_core.obj `if test -f 'wireway_core.c'; then $(CYGPATH_W) 'wireway_core.c'; else $(CYGPATH_W) '$(srcdir)/wireway_core.c'; fi`
+
+wireway-wireway_func.o: wireway_func.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-wireway_func.o -MD -MP -MF $(DEPDIR)/wireway-wireway_func.Tpo -c -o wireway-wireway_func.o `test -f 'wireway_func.c' || echo '$(srcdir)/'`wireway_func.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-wireway_func.Tpo $(DEPDIR)/wireway-wireway_func.Po
+#	$(AM_V_CC)source='wireway_func.c' object='wireway-wireway_func.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-wireway_func.o `test -f 'wireway_func.c' || echo '$(srcdir)/'`wireway_func.c
+
+wireway-wireway_func.obj: wireway_func.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-wireway_func.obj -MD -MP -MF $(DEPDIR)/wireway-wireway_func.Tpo -c -o wireway-wireway_func.obj `if test -f 'wireway_func.c'; then $(CYGPATH_W) 'wireway_func.c'; else $(CYGPATH_W) '$(srcdir)/wireway_func.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-wireway_func.Tpo $(DEPDIR)/wireway-wireway_func.Po
+#	$(AM_V_CC)source='wireway_func.c' object='wireway-wireway_func.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-wireway_func.obj `if test -f 'wireway_func.c'; then $(CYGPATH_W) 'wireway_func.c'; else $(CYGPATH_W) '$(srcdir)/wireway_func.c'; fi`
+
+wireway-bptree.o: bptree.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-bptree.o -MD -MP -MF $(DEPDIR)/wireway-bptree.Tpo -c -o wireway-bptree.o `test -f 'bptree.c' || echo '$(srcdir)/'`bptree.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-bptree.Tpo $(DEPDIR)/wireway-bptree.Po
+#	$(AM_V_CC)source='bptree.c' object='wireway-bptree.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-bptree.o `test -f 'bptree.c' || echo '$(srcdir)/'`bptree.c
+
+wireway-bptree.obj: bptree.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-bptree.obj -MD -MP -MF $(DEPDIR)/wireway-bptree.Tpo -c -o wireway-bptree.obj `if test -f 'bptree.c'; then $(CYGPATH_W) 'bptree.c'; else $(CYGPATH_W) '$(srcdir)/bptree.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-bptree.Tpo $(DEPDIR)/wireway-bptree.Po
+#	$(AM_V_CC)source='bptree.c' object='wireway-bptree.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-bptree.obj `if test -f 'bptree.c'; then $(CYGPATH_W) 'bptree.c'; else $(CYGPATH_W) '$(srcdir)/bptree.c'; fi`
+
+wireway-storage_sys.o: storage_sys.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-storage_sys.o -MD -MP -MF $(DEPDIR)/wireway-storage_sys.Tpo -c -o wireway-storage_sys.o `test -f 'storage_sys.c' || echo '$(srcdir)/'`storage_sys.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-storage_sys.Tpo $(DEPDIR)/wireway-storage_sys.Po
+#	$(AM_V_CC)source='storage_sys.c' object='wireway-storage_sys.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-storage_sys.o `test -f 'storage_sys.c' || echo '$(srcdir)/'`storage_sys.c
+
+wireway-storage_sys.obj: storage_sys.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-storage_sys.obj -MD -MP -MF $(DEPDIR)/wireway-storage_sys.Tpo -c -o wireway-storage_sys.obj `if test -f 'storage_sys.c'; then $(CYGPATH_W) 'storage_sys.c'; else $(CYGPATH_W) '$(srcdir)/storage_sys.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-storage_sys.Tpo $(DEPDIR)/wireway-storage_sys.Po
+#	$(AM_V_CC)source='storage_sys.c' object='wireway-storage_sys.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-storage_sys.obj `if test -f 'storage_sys.c'; then $(CYGPATH_W) 'storage_sys.c'; else $(CYGPATH_W) '$(srcdir)/storage_sys.c'; fi`
+
+wireway-bitmap.o: bitmap.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-bitmap.o -MD -MP -MF $(DEPDIR)/wireway-bitmap.Tpo -c -o wireway-bitmap.o `test -f 'bitmap.c' || echo '$(srcdir)/'`bitmap.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-bitmap.Tpo $(DEPDIR)/wireway-bitmap.Po
+#	$(AM_V_CC)source='bitmap.c' object='wireway-bitmap.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-bitmap.o `test -f 'bitmap.c' || echo '$(srcdir)/'`bitmap.c
+
+wireway-bitmap.obj: bitmap.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-bitmap.obj -MD -MP -MF $(DEPDIR)/wireway-bitmap.Tpo -c -o wireway-bitmap.obj `if test -f 'bitmap.c'; then $(CYGPATH_W) 'bitmap.c'; else $(CYGPATH_W) '$(srcdir)/bitmap.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-bitmap.Tpo $(DEPDIR)/wireway-bitmap.Po
+#	$(AM_V_CC)source='bitmap.c' object='wireway-bitmap.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-bitmap.obj `if test -f 'bitmap.c'; then $(CYGPATH_W) 'bitmap.c'; else $(CYGPATH_W) '$(srcdir)/bitmap.c'; fi`
+
+wireway-bitops.o: bitops.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-bitops.o -MD -MP -MF $(DEPDIR)/wireway-bitops.Tpo -c -o wireway-bitops.o `test -f 'bitops.c' || echo '$(srcdir)/'`bitops.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-bitops.Tpo $(DEPDIR)/wireway-bitops.Po
+#	$(AM_V_CC)source='bitops.c' object='wireway-bitops.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-bitops.o `test -f 'bitops.c' || echo '$(srcdir)/'`bitops.c
+
+wireway-bitops.obj: bitops.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-bitops.obj -MD -MP -MF $(DEPDIR)/wireway-bitops.Tpo -c -o wireway-bitops.obj `if test -f 'bitops.c'; then $(CYGPATH_W) 'bitops.c'; else $(CYGPATH_W) '$(srcdir)/bitops.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-bitops.Tpo $(DEPDIR)/wireway-bitops.Po
+#	$(AM_V_CC)source='bitops.c' object='wireway-bitops.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-bitops.obj `if test -f 'bitops.c'; then $(CYGPATH_W) 'bitops.c'; else $(CYGPATH_W) '$(srcdir)/bitops.c'; fi`
+
+wireway-user_entity.o: user_entity.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-user_entity.o -MD -MP -MF $(DEPDIR)/wireway-user_entity.Tpo -c -o wireway-user_entity.o `test -f 'user_entity.c' || echo '$(srcdir)/'`user_entity.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-user_entity.Tpo $(DEPDIR)/wireway-user_entity.Po
+#	$(AM_V_CC)source='user_entity.c' object='wireway-user_entity.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-user_entity.o `test -f 'user_entity.c' || echo '$(srcdir)/'`user_entity.c
+
+wireway-user_entity.obj: user_entity.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-user_entity.obj -MD -MP -MF $(DEPDIR)/wireway-user_entity.Tpo -c -o wireway-user_entity.obj `if test -f 'user_entity.c'; then $(CYGPATH_W) 'user_entity.c'; else $(CYGPATH_W) '$(srcdir)/user_entity.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-user_entity.Tpo $(DEPDIR)/wireway-user_entity.Po
+#	$(AM_V_CC)source='user_entity.c' object='wireway-user_entity.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-user_entity.obj `if test -f 'user_entity.c'; then $(CYGPATH_W) 'user_entity.c'; else $(CYGPATH_W) '$(srcdir)/user_entity.c'; fi`
+
+wireway-user_entity_core.o: user_entity_core.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-user_entity_core.o -MD -MP -MF $(DEPDIR)/wireway-user_entity_core.Tpo -c -o wireway-user_entity_core.o `test -f 'user_entity_core.c' || echo '$(srcdir)/'`user_entity_core.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-user_entity_core.Tpo $(DEPDIR)/wireway-user_entity_core.Po
+#	$(AM_V_CC)source='user_entity_core.c' object='wireway-user_entity_core.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-user_entity_core.o `test -f 'user_entity_core.c' || echo '$(srcdir)/'`user_entity_core.c
+
+wireway-user_entity_core.obj: user_entity_core.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-user_entity_core.obj -MD -MP -MF $(DEPDIR)/wireway-user_entity_core.Tpo -c -o wireway-user_entity_core.obj `if test -f 'user_entity_core.c'; then $(CYGPATH_W) 'user_entity_core.c'; else $(CYGPATH_W) '$(srcdir)/user_entity_core.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-user_entity_core.Tpo $(DEPDIR)/wireway-user_entity_core.Po
+#	$(AM_V_CC)source='user_entity_core.c' object='wireway-user_entity_core.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-user_entity_core.obj `if test -f 'user_entity_core.c'; then $(CYGPATH_W) 'user_entity_core.c'; else $(CYGPATH_W) '$(srcdir)/user_entity_core.c'; fi`
+
+wireway-wireway_server.o: wireway_server.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-wireway_server.o -MD -MP -MF $(DEPDIR)/wireway-wireway_server.Tpo -c -o wireway-wireway_server.o `test -f 'wireway_server.c' || echo '$(srcdir)/'`wireway_server.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-wireway_server.Tpo $(DEPDIR)/wireway-wireway_server.Po
+#	$(AM_V_CC)source='wireway_server.c' object='wireway-wireway_server.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-wireway_server.o `test -f 'wireway_server.c' || echo '$(srcdir)/'`wireway_server.c
+
+wireway-wireway_server.obj: wireway_server.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -MT wireway-wireway_server.obj -MD -MP -MF $(DEPDIR)/wireway-wireway_server.Tpo -c -o wireway-wireway_server.obj `if test -f 'wireway_server.c'; then $(CYGPATH_W) 'wireway_server.c'; else $(CYGPATH_W) '$(srcdir)/wireway_server.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wireway-wireway_server.Tpo $(DEPDIR)/wireway-wireway_server.Po
+#	$(AM_V_CC)source='wireway_server.c' object='wireway-wireway_server.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(wireway_CFLAGS) $(CFLAGS) -c -o wireway-wireway_server.obj `if test -f 'wireway_server.c'; then $(CYGPATH_W) 'wireway_server.c'; else $(CYGPATH_W) '$(srcdir)/wireway_server.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

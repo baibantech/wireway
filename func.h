@@ -13,4 +13,10 @@ wireway *alloc_wireway_inst();
 void wireway_tree_restore();
 wireway *find_wireway_restore_list(char *name);
 wireway *get_wireway_in_mem(char *name);
+unsigned long get_bptree_dataid(void *data);
 
+unsigned long get_bptree_keyid(void *data);
+
+unsigned long alloc_wireway_bptree_block();
+
+unsigned long alloc_wireway_block();
