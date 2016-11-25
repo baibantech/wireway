@@ -30,13 +30,6 @@
  
 #include "wireway_dev.h" 
 MODULE_LICENSE("GPL");  
-<<<<<<< HEAD
-DEFINE_PER_CPU(unsigned long long,timestamp_val);
-
-DEFINE_PER_CPU(unsigned long long,timestamp_val1);
-int ip_rcv_finish_2(struct sk_buff *skb);
-struct udp_table *tmp_table =(struct udp_table*) (void*)(unsigned long long)0xffffffff81d18e70ULL;
-=======
 int msg_rcv = 0;
 int msg_in_err = 0;
 int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port);
@@ -52,56 +45,18 @@ unsigned long wake_total = 0;
 unsigned long msg_in_queue_total = 0;
 extern unsigned long inq_step1 ;
 extern unsigned long inq_step2 ;
->>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
 
 static unsigned long long rdtsc(void)
 {
     unsigned int lo,hi;
     asm volatile
     (
-<<<<<<< HEAD
-     "rdtsc":"=a"(lo),"=d"(hi)
-    );
-    return (unsigned long long)hi<<32|lo;
-}
-
-void record_timestamp(void)
-{
-    unsigned long long tmp = 0;
-    struct timeval stamp ;
-    unsigned long jiff = 0;
-    if(__get_cpu_var(timestamp_val) == 0)
-    {
-        __get_cpu_var(timestamp_val) = rdtsc();
-        //printk("begin time stamp is %llx\r\n",__get_cpu_var(timestamp_val));
-    }
-    else
-    {
-        tmp = rdtsc();  
-        //jiffies_to_timeval(clock_t_to_jiffies(tmp-__get_cpu_var(timestamp_val)),&stamp);
-        //printk(" timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);
-        jiff = clock_t_to_jiffies(tmp-__get_cpu_var(timestamp_val)) ;
-        printk("jiff is %llx\r\n",jiff);
-        
-        printk("ten msec is %d jiff \r\n",msecs_to_jiffies(10));
-             
-        printk("next hook time sub is %llx\r\n",tmp-__get_cpu_var(timestamp_val));
-        __get_cpu_var(timestamp_val)= tmp;
-    }
-
-
-}
-
-
- 
-=======
      "rdtsc":"=a"(lo),"=d"(hi) 
     ); 
     return (unsigned long long)hi<<32|lo;
 }   
 
   
->>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
 static unsigned int sample(  
 unsigned int hooknum,  
 struct sk_buff * skb,  
@@ -110,50 +65,6 @@ const struct net_device *out,
 int (*okfn) (struct sk_buff *))  
 {  
     __be32 sip,dip;
-<<<<<<< HEAD
-    struct timeval stamp ;
-
-    struct udphdr *uhdr = NULL;
-	unsigned long long tmp1 ,tmp2,tmp3 =0;
-	tmp1= tmp2= tmp3 = 0;
-	tmp2 = rdtsc();
-	if(skb){ 
-	 
-   struct sk_buff *sb = NULL;  
-   sb = skb;  
-   struct iphdr *iph;  
-   iph  = ip_hdr(sb);  
-   sip = iph->saddr;  
-   dip = iph->daddr;  
-   //printk("Packet for source address: %d.%d.%d.%d\n destination address: %d.%d.%d.%d\n ", NIPQUAD(sip), NIPQUAD(dip));  
-    if(IPPROTO_UDP == iph->protocol)
-    {
-
-        uhdr = udp_hdr(skb);
-        if(ntohs(uhdr->dest) == 6789)
-        {
-
-
-
-	//tmp1 = rdtsc();
-        //skb_get_timestamp(skb,&stamp);
-        //__get_cpu_var(timestamp_val) = rdtsc();
-	        skb->tstamp.tv64 = rdtsc();
-            //record_timestamp();
-	//tmp3 = rdtsc();
-        //printk("pre routing skb timestap is %u:%u\r\n",stamp.tv_sec,stamp.tv_usec);  
-    
-            ip_rcv_finish_2(skb);
-            return NF_STOLEN;
-        }
-
-        }
-    
-
-    }  
-	//printk("hook time2 is %x,%x\r\n",rdtsc()-tmp2,tmp3-tmp1);
- return NF_ACCEPT;  
-=======
     int ret;
     unsigned long begin;
     unsigned long end;
@@ -222,7 +133,6 @@ int (*okfn) (struct sk_buff *))
 	return NF_DROP;
     }  
     return NF_ACCEPT;  
->>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
 } 
 
 int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port)
@@ -287,7 +197,6 @@ const struct net_device *in,const struct net_device *out,int (*okfn)(struct sk_b
 	if(ntohs(uhdr->dest) == local_port)
     {
     	printk("hook cost time is %x\r\n",rdtsc()- skb->tstamp.tv64);
-	printk("route cost time %x,%x\r\n",__get_cpu_var(timestamp_val),__get_cpu_var(timestamp_val1));	
     }
 
 	#if 0
@@ -744,33 +653,15 @@ void list_nf_hook(int prot)
 }
 
 static int __init filter_init(void) {  
-<<<<<<< HEAD
-    __get_cpu_var(timestamp_val) = 0;
-    nf_register_hook(&local_in_ops);
-    nf_register_hook(&sample_ops);
-    nf_register_hook(&local_out_ops);
-    nf_register_hook(&post_routing_ops);
-    list_nf_hook(PF_INET);
-    //wireway_dev_init(); 
-  return 0;  
-=======
     nf_register_hook(&local_in_ops);
     nf_register_hook(&sample_ops); 
     wireway_dev_init(); 
     return 0;  
->>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
 }  
   
   
 static void __exit filter_exit(void) { 
-<<<<<<< HEAD
-    //wireway_dev_exit();
-  
-    nf_unregister_hook(&post_routing_ops);
-    nf_unregister_hook(&local_out_ops); 
-=======
     wireway_dev_exit(); 
->>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
     nf_unregister_hook(&sample_ops);
     nf_unregister_hook(&local_in_ops);  
 }  
