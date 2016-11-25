@@ -34,13 +34,39 @@ static size_t merge_dev_write(struct file *filp,const char __user *buf,size_t si
     return 0;
 }
 
+void print_vma_detail(struct vm_area_struct *vma)
+{
+    if(!vma)
+    {
+        return;
+    }
+    
+    printk("\r\n-------------------------------------\r\n");
+    printk("vma start is 0x%llx\r\n",vma->vm_start); 
+    printk("vma end   is 0x%llx\r\n",vma->vm_end);
+    printk("vma flags is 0x%llx\r\n",vma->vm_flags);
+    printk("vma ops   is %p \r\n",   vma->vm_ops);
+    printk("vma file  is %p \r\n",   vma->vm_file);
+
+}
+
+
 int merge_dev_ioctl(struct file *filp,unsigned int cmd,unsigned long args)
 {
     printk("enter ioctl\r\n");
+    struct mm_struct *mm = current->mm;
+    struct vm_area_struct *vma;
     switch(cmd)
     {
         case MERGE_IOC_SHOW_VMA:
             {
+                vma  = find_vma(mm,0);
+                for (; vma; vma = vma->vm_next)
+                {
+                    print_vma_detail(vma);
+                }    
+
+
                 printk("show current process vma\r\n");
             }       
 
