@@ -30,17 +30,36 @@
  
 #include "wireway_dev.h" 
 MODULE_LICENSE("GPL");  
+<<<<<<< HEAD
 DEFINE_PER_CPU(unsigned long long,timestamp_val);
 
 DEFINE_PER_CPU(unsigned long long,timestamp_val1);
 int ip_rcv_finish_2(struct sk_buff *skb);
 struct udp_table *tmp_table =(struct udp_table*) (void*)(unsigned long long)0xffffffff81d18e70ULL;
+=======
+int msg_rcv = 0;
+int msg_in_err = 0;
+int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port);
+extern void show_packet_rcv_control(void);
+int irq_cpu = 3;
+unsigned long msg_in_queue_av = 0;
+unsigned long msg_in_queue_max = 0;
+unsigned long msg_in_queue_step1 = 0;
+unsigned long msg_in_queue_step2 = 0;
+unsigned long wake_av = 0;
+unsigned long wake_max = 0;
+unsigned long wake_total = 0;
+unsigned long msg_in_queue_total = 0;
+extern unsigned long inq_step1 ;
+extern unsigned long inq_step2 ;
+>>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
 
 static unsigned long long rdtsc(void)
 {
     unsigned int lo,hi;
     asm volatile
     (
+<<<<<<< HEAD
      "rdtsc":"=a"(lo),"=d"(hi)
     );
     return (unsigned long long)hi<<32|lo;
@@ -75,6 +94,14 @@ void record_timestamp(void)
 
 
  
+=======
+     "rdtsc":"=a"(lo),"=d"(hi) 
+    ); 
+    return (unsigned long long)hi<<32|lo;
+}   
+
+  
+>>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
 static unsigned int sample(  
 unsigned int hooknum,  
 struct sk_buff * skb,  
@@ -83,6 +110,7 @@ const struct net_device *out,
 int (*okfn) (struct sk_buff *))  
 {  
     __be32 sip,dip;
+<<<<<<< HEAD
     struct timeval stamp ;
 
     struct udphdr *uhdr = NULL;
@@ -125,6 +153,76 @@ int (*okfn) (struct sk_buff *))
     }  
 	//printk("hook time2 is %x,%x\r\n",rdtsc()-tmp2,tmp3-tmp1);
  return NF_ACCEPT;  
+=======
+    int ret;
+    unsigned long begin;
+    unsigned long end;
+    unsigned long  flag;        
+    if(smp_processor_id() != irq_cpu)
+    {
+        printk("irq cpu is %d\r\n",smp_processor_id());
+        irq_cpu = smp_processor_id();
+    } 
+    if(skb){  
+        struct sk_buff *sb = NULL;  
+        sb = skb;  
+        struct iphdr *iph;  
+        iph  = ip_hdr(sb);  
+        sip = iph->saddr;  
+        dip = iph->daddr;  
+        
+        if(0 == is_udp_local_packet(skb,in,6789))
+        {
+            if(collector_main)
+            {   
+                msg_rcv++;
+                __skb_pull(skb,sizeof(struct iphdr)+sizeof(struct udphdr));
+                local_irq_save(flag);
+                begin = rdtsc();
+                //local_irq_save(flag);
+                ret = lfrwq_inq(collector_main->rcv_queue,skb);
+                //local_irq_restore(flag);
+                end =  rdtsc();
+                local_irq_restore(flag);
+                
+                msg_in_queue_total += end-begin;
+                msg_in_queue_av = msg_in_queue_total/msg_rcv;
+                
+                if(end- begin > msg_in_queue_max)
+                {
+                    msg_in_queue_max = end -begin;
+                    msg_in_queue_step1 = inq_step1;
+                    msg_in_queue_step2 = inq_step2;
+                }
+                if(0 == ret)
+                {
+                    #if 1
+                    begin = rdtsc();
+                    packet_rcv_wakeup();
+                    end = rdtsc(); 
+                    
+                    wake_total += end - begin ;
+                    wake_av = wake_total/msg_rcv;
+                    if(wake_max < end -begin)
+                    {
+                        wake_max = end -begin;
+                    }                   
+                    #endif
+
+ 
+                    return NF_STOLEN;
+                }
+                else
+                {
+                    packet_rcv_wakeup();
+                    show_packet_rcv_control();
+                }
+            }
+        } 
+	return NF_DROP;
+    }  
+    return NF_ACCEPT;  
+>>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
 } 
 
 int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short port)
@@ -155,7 +253,6 @@ int is_udp_local_packet(struct sk_buff *skb,struct net_device *in,unsigned short
         for (ifa = in_dev->ifa_list; ifa; ifa = ifa->ifa_next) {
             if(ntohl(ifa->ifa_address) == ntohl(dip))
             {
-                printk("device addr is 0x%x\r\n",ntohl(ifa->ifa_address));
                 if(ntohs(uhdr->dest) == port)
                 {
                     rcu_read_unlock();
@@ -647,6 +744,7 @@ void list_nf_hook(int prot)
 }
 
 static int __init filter_init(void) {  
+<<<<<<< HEAD
     __get_cpu_var(timestamp_val) = 0;
     nf_register_hook(&local_in_ops);
     nf_register_hook(&sample_ops);
@@ -655,14 +753,24 @@ static int __init filter_init(void) {
     list_nf_hook(PF_INET);
     //wireway_dev_init(); 
   return 0;  
+=======
+    nf_register_hook(&local_in_ops);
+    nf_register_hook(&sample_ops); 
+    wireway_dev_init(); 
+    return 0;  
+>>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
 }  
   
   
 static void __exit filter_exit(void) { 
+<<<<<<< HEAD
     //wireway_dev_exit();
   
     nf_unregister_hook(&post_routing_ops);
     nf_unregister_hook(&local_out_ops); 
+=======
+    wireway_dev_exit(); 
+>>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
     nf_unregister_hook(&sample_ops);
     nf_unregister_hook(&local_in_ops);  
 }  

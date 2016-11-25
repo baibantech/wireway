@@ -191,6 +191,7 @@ void entity_thread_main()
 
 
 }
+int wireway_msg_rcv = 0;
 void wireway_thread_main()
 {
     int sin_len;
@@ -222,12 +223,20 @@ void wireway_thread_main()
     {
         ret = recvfrom(socket_descriptor,message,message_len,0,(struct sockaddr *)&sin,&sin_len);
 
+<<<<<<< HEAD
 	#if 0
         printf("recv msg\r\n");
         printf("msg Len is %d\r\n",ret);
         printf("receive from %s\r\n" , inet_ntoa(sin.sin_addr));
         
         
+=======
+        //printf("recv msg\r\n");
+        //printf("msg Len is %d\r\n",ret);
+        //printf("receive from %s\r\n" , inet_ntoa(sin.sin_addr));
+        wireway_msg_rcv++; 
+        #if 0
+>>>>>>> 7771209cf28b70af4f55b06b0aa788e50ab11d13
         req = deserial_entity_req(message,ret);
         free(req);
         
@@ -239,7 +248,7 @@ void wireway_thread_main()
         }
 	#endif 
         memset(message,0,message_len);
-
+        #endif
     }
  
     close(socket_descriptor);
